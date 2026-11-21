@@ -1,0 +1,3139 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aplikasi Pembuatan Kwitansi Pembayaran KILC</title>
+    <meta
+      name="description"
+      content="Portal formulir pembayaran siswa/rombongan dan administrasi penerbitan kwitansi resmi Kampung Inggris Language Center (KILC)."
+    />
+    <meta property="og:title" content="Aplikasi Pembuatan Kwitansi Pembayaran KILC" />
+    <meta
+      property="og:description"
+      content="Portal formulir pembayaran siswa/rombongan dan administrasi penerbitan kwitansi resmi Kampung Inggris Language Center (KILC)."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Fonts: Cormorant Garamond (Display), Public Sans (Body), JetBrains Mono (Labels & Tabular Data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      if (window.tailwind) {
+        window.tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: {
+                display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+                sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
+                mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+              },
+              colors: {
+                kilc: {
+                  900: '#1a2f23',
+                  800: '#2d6a4f',
+                  700: '#3a7d5e',
+                  100: '#e9f5db',
+                  50: '#f4faee',
+                },
+                botanical: {
+                  bg: '#fdfefc',
+                  ink: '#1a2f23',
+                  accent: '#2d6a4f',
+                  leaf: '#e9f5db',
+                  sage: '#718355',
+                },
+              },
+            },
+          },
+        };
+      }
+    </script>
+
+    <style>
+      :root {
+        --bg: #fdfefc;
+        --ink: #1a2f23;
+        --accent: #2d6a4f;
+        --soft-leaf: #e9f5db;
+        --sage: #718355;
+        --ink-faint: rgba(26, 47, 35, 0.1);
+        --font-display: 'Cormorant Garamond', Georgia, serif;
+        --font-sans: 'Public Sans', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background-color: var(--bg);
+        color: var(--ink);
+        background-image:
+          radial-gradient(circle at 100% 0%, var(--soft-leaf) 0%, transparent 40%),
+          radial-gradient(circle at 0% 100%, var(--soft-leaf) 0%, transparent 40%);
+        background-attachment: fixed;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      h1, h2, h3, .font-display {
+        font-family: var(--font-display);
+        letter-spacing: -0.02em;
+      }
+
+      #receipt-sheet,
+      #receipt-sheet h1,
+      #receipt-sheet h2,
+      #receipt-sheet h3,
+      #receipt-sheet .font-display {
+        font-family: var(--font-sans);
+        letter-spacing: -0.01em;
+      }
+
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible,
+      button:focus-visible,
+      a:focus-visible {
+        outline: 2px solid #2d6a4f;
+        outline-offset: 2px;
+      }
+
+      @page {
+        size: 210mm 148mm;
+        margin: 7mm;
+      }
+
+      @media print {
+        html,
+        body {
+          background: #ffffff !important;
+          background-image: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 210mm !important;
+          height: 148mm !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .no-print,
+        #site-public,
+        #site-admin {
+          display: none !important;
+        }
+
+        #receipt-modal {
+          position: static !important;
+          inset: auto !important;
+          background: transparent !important;
+          padding: 0 !important;
+          overflow: visible !important;
+          display: block !important;
+        }
+
+        #receipt-modal-dialog {
+          max-width: 100% !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+          border: none !important;
+          background: transparent !important;
+        }
+
+        #receipt-sheet {
+          border: 1.5px solid #0f172a !important;
+          box-shadow: none !important;
+          margin: 0 auto !important;
+          padding: 5mm 6mm !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          max-height: 134mm !important;
+          overflow: hidden !important;
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col bg-[#fdfefc] text-[#1a2f23]">
+    <!-- ==================== WEBSITE 1: FORMULIR PEMBAYARAN (TANPA ?mode=admin) ==================== -->
+    <div id="site-public" class="hidden min-h-screen flex flex-col">
+      <!-- Header Khusus Formulir Pembayaran (Tanpa tautan ke Portal Admin) -->
+      <header class="sticky top-0 z-30 bg-[#fdfefc]/85 backdrop-blur-md border-b border-[#1a2f23]/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-8">
+          <a
+            href="#top-public"
+            class="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-[0.12em] text-[#1a2f23] whitespace-nowrap shrink-0"
+          >
+            PORTAL KWITANSI PEMBAYARAN
+          </a>
+
+          <nav aria-label="Bagian formulir" class="hidden md:flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.12em] text-[#1a2f23]/70">
+            <a href="#section-identitas" class="hover:text-[#2d6a4f] transition-colors whitespace-nowrap shrink-0">
+              01. Identitas
+            </a>
+            <a href="#section-pembayaran" class="hover:text-[#2d6a4f] transition-colors whitespace-nowrap shrink-0">
+              02. Pembayaran
+            </a>
+            <a href="#section-bukti" class="hover:text-[#2d6a4f] transition-colors whitespace-nowrap shrink-0">
+              03. Bukti &amp; CS
+            </a>
+          </nav>
+
+          <div class="flex items-center shrink-0">
+            <button
+              type="button"
+              id="header-reset-btn"
+              class="px-3 sm:px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[#1a2f23] bg-white/80 hover:bg-[#e9f5db] border border-[#1a2f23]/15 rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+            >
+              Reset Formulir
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main id="top-public" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div class="w-full">
+          <!-- Page Title & Logo -->
+          <div class="mb-10 flex flex-col sm:flex-row sm:items-center gap-5">
+            <img
+              src="/assets/aistudio/logo_internal_32667169.png"
+              alt="Logo LC Language Center"
+              class="h-14 w-auto object-contain self-start shrink-0"
+              onerror="this.style.display='none'"
+            />
+            <div>
+              <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f] mb-2">
+                Kampung Inggris Language Center
+              </p>
+              <h1 class="font-display text-3xl sm:text-5xl font-bold text-[#1a2f23] leading-[1.02] tracking-[-0.02em]" style="text-wrap: balance;">
+                Formulir Konfirmasi Pembayaran &amp; Pengajuan Kwitansi
+              </h1>
+              <p class="mt-3 text-sm sm:text-base text-[#1a2f23]/70 max-w-2xl leading-relaxed">
+                Lengkapi data identitas siswa atau instansi, rincian transaksi pembayaran, serta unggah bukti transfer untuk diteruskan ke bagian Finance KILC.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+            <div class="lg:col-span-8 min-w-0">
+
+          <!-- Success Feedback Banner -->
+          <div
+            id="public-success-banner"
+            role="status"
+            aria-live="polite"
+            class="hidden mb-8 bg-[#e9f5db] border border-[#2d6a4f]/25 rounded-[4px] p-6"
+          >
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div>
+                <h2 class="font-display text-2xl font-bold text-[#1a2f23]">
+                  Formulir Pembayaran Berhasil Dikirim
+                </h2>
+                <p id="public-success-detail" class="mt-1 text-sm text-[#1a2f23]/80 leading-relaxed"></p>
+                <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[#2d6a4f] font-semibold">
+                  Status saat ini: Menunggu Verifikasi oleh tim Finance KILC.
+                </p>
+              </div>
+              <button
+                type="button"
+                id="btn-new-submission"
+                class="px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[#1a2f23] bg-white border border-[#2d6a4f]/30 hover:bg-[#f4faee] rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+              >
+                Buat Pengajuan Baru
+              </button>
+            </div>
+          </div>
+
+          <!-- Validation Alert Banner -->
+          <div
+            id="public-error-banner"
+            role="alert"
+            class="hidden mb-6 bg-red-50 border border-red-200 rounded-[4px] px-5 py-4 text-sm text-red-800"
+          ></div>
+
+          <!-- 3-Row Form Card -->
+          <form
+            id="payment-form"
+            novalidate
+            class="relative overflow-hidden bg-white border border-[#1a2f23]/10 rounded-[4px] divide-y divide-[#1a2f23]/10"
+          >
+            <svg aria-hidden="true" class="pointer-events-none absolute -top-5 -right-5 w-20 h-20 text-[#e9f5db]" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M50 0 C70 30 100 50 100 100 C50 100 30 70 0 50 C0 30 20 0 50 0" />
+            </svg>
+
+            <!-- BARIS 01: Identitas & Program -->
+            <div id="section-identitas" class="relative p-6 sm:p-10 scroll-mt-20">
+              <div class="mb-7">
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">
+                  01 · Bagian Pertama
+                </p>
+                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23] mt-1">
+                  Identitas &amp; Program
+                </h2>
+                <p class="text-sm text-[#1a2f23]/65 mt-1">
+                  Tentukan cabang asal pendaftaran, identitas siswa atau rombongan instansi, serta program yang diambil.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div>
+                  <label for="input-cabang" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Cabang <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <select
+                    id="input-cabang"
+                    name="cabang"
+                    required
+                    class="w-full h-11 px-0 text-sm bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] focus:border-[#2d6a4f] transition-colors"
+                  >
+                    <option value="">-- Pilih Cabang KILC --</option>
+                    <option value="Pare - Offline">Pare - Offline</option>
+                    <option value="Pare - Online">Pare - Online</option>
+                    <option value="Pare - Rombongan">Pare - Rombongan</option>
+                    <option value="Bogor">Bogor</option>
+                    <option value="Yogya - Mantrijeron">Yogya - Mantrijeron</option>
+                    <option value="Yogya Gondokusuman">Yogya Gondokusuman</option>
+                    <option value="Lampung">Lampung</option>
+                    <option value="Medan">Medan</option>
+                    <option value="Makassar - Panakukang">Makassar - Panakukang</option>
+                    <option value="Makassar - Tamalanrea">Makassar - Tamalanrea</option>
+                    <option value="Bekasi">Bekasi</option>
+                    <option value="Semarang">Semarang</option>
+                    <option value="Surabaya">Surabaya</option>
+                    <option value="Solo">Solo</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="input-nama" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Nama Siswa / Instansi <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="input-nama"
+                    name="namaSiswa"
+                    required
+                    placeholder="Contoh: Ahmad Fauzi atau SMAN 1 Bogor"
+                    class="w-full h-11 px-0 text-sm bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
+                  />
+                </div>
+
+                <div class="md:col-span-2 pt-1">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-[4px] bg-[#e9f5db]/75 border border-[#2d6a4f]/15">
+                    <label for="input-is-rombongan" class="flex items-start gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        id="input-is-rombongan"
+                        name="isRombongan"
+                        class="mt-0.5 h-5 w-5 rounded-[2px] border-[#2d6a4f]/40 text-[#2d6a4f] cursor-pointer accent-[#2d6a4f]"
+                      />
+                      <span>
+                        <span class="block text-sm font-semibold text-[#1a2f23]">Tipe Rombongan</span>
+                        <span class="block text-xs text-[#1a2f23]/70 mt-0.5">
+                          Centang jika pembayaran berasal dari rombongan instansi/sekolah. Nomor registrasi siswa otomatis diisi "-".
+                        </span>
+                      </span>
+                    </label>
+
+                    <div id="wrapper-jenis-rombongan" class="hidden w-full sm:w-64 shrink-0">
+                      <label for="input-jenis-rombongan" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2d6a4f] mb-1">
+                        Jenis Rombongan <span class="text-red-600" aria-hidden="true">*</span>
+                      </label>
+                      <select
+                        id="input-jenis-rombongan"
+                        name="jenisRombongan"
+                        class="w-full h-10 px-3 text-sm bg-white border border-[#2d6a4f]/25 rounded-[2px] text-[#1a2f23]"
+                      >
+                        <option value="">-- Pilih Jenis Rombongan --</option>
+                        <option value="English Camp">English Camp</option>
+                        <option value="English Non Camp">English Non Camp</option>
+                        <option value="One Day Visit">One Day Visit</option>
+                        <option value="Goes to">Goes to</option>
+                        <option value="Online">Online</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="input-no-reg" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Nomor Registrasi Siswa
+                    <span id="badge-req-no-reg" class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="input-no-reg"
+                    name="nomorRegistrasi"
+                    required
+                    placeholder="Contoh: 010101"
+                    class="w-full h-11 px-0 text-sm bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
+                  />
+                  <p id="hint-no-reg" class="mt-1.5 text-xs text-[#718355]">
+                    Wajib diisi untuk siswa reguler.
+                  </p>
+                </div>
+
+                <div>
+                  <label for="input-program" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Program Kursus <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="input-program"
+                    name="programKursus"
+                    required
+                    placeholder="Contoh: IEP 4 Bulan Camp Private"
+                    class="w-full h-11 px-0 text-sm bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
+                  />
+                </div>
+
+                <div class="md:col-span-2">
+                  <label for="input-periode" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Periode <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="input-periode"
+                    name="periode"
+                    required
+                    class="w-full h-11 px-0 text-sm font-mono tabular-nums bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] focus:border-[#2d6a4f] transition-colors"
+                  />
+                  <p class="mt-1.5 text-xs text-[#718355]">
+                    Pilih tanggal mulai periode kursus melalui kalender.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- BARIS 02: Detail Pembayaran -->
+            <div id="section-pembayaran" class="p-6 sm:p-10 scroll-mt-20">
+              <div class="mb-7">
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">
+                  02 · Bagian Kedua
+                </p>
+                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23] mt-1">
+                  Detail Pembayaran
+                </h2>
+                <p class="text-sm text-[#1a2f23]/65 mt-1">
+                  Isi kanal pembayaran, nominal transfer dalam Rupiah, serta keterangan peruntukan pembayaran.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div>
+                  <label for="input-metode" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Metode Pengiriman <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <select
+                    id="input-metode"
+                    name="metodePengiriman"
+                    required
+                    class="w-full h-11 px-0 text-sm bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] focus:border-[#2d6a4f] transition-colors"
+                  >
+                    <option value="">-- Pilih Metode Pembayaran --</option>
+                    <option value="Mandiri">Mandiri</option>
+                    <option value="BRI">BRI</option>
+                    <option value="BNI">BNI</option>
+                    <option value="QRIS">QRIS</option>
+                    <option value="Tunai">Tunai</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="input-rekening-3digit" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    3 Digit Akhir Rekening
+                    <span id="badge-req-rekening" class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="input-rekening-3digit"
+                    name="digitRekening"
+                    maxlength="3"
+                    inputmode="numeric"
+                    placeholder="Contoh: 842"
+                    class="w-full h-11 px-0 text-sm font-mono tabular-nums bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] disabled:bg-[#f4f7f2] disabled:px-2.5 disabled:text-[#1a2f23]/40 disabled:cursor-not-allowed transition-colors"
+                  />
+                  <p id="hint-rekening" class="mt-1.5 text-xs text-[#718355]">
+                    Masukkan 3 digit terakhir rekening penerima (nonaktif untuk QRIS / Tunai).
+                  </p>
+                </div>
+
+                <div>
+                  <label for="input-tgl-bayar" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Tanggal Pembayaran <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="input-tgl-bayar"
+                    name="tanggalPembayaran"
+                    required
+                    class="w-full h-11 px-0 text-sm font-mono tabular-nums bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] focus:border-[#2d6a4f] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label for="input-jumlah" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Jumlah Pembayaran <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="input-jumlah"
+                    name="jumlahPembayaran"
+                    inputmode="numeric"
+                    required
+                    placeholder="Rp 0"
+                    class="w-full h-11 px-0 text-base font-mono font-bold tabular-nums bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
+                  />
+                  <p id="preview-terbilang" class="mt-1.5 text-xs text-[#718355]">
+                    Format Rupiah otomatis saat angka diketik.
+                  </p>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label for="input-keterangan" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                    Keterangan Pembayaran <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="input-keterangan"
+                    name="keterangan"
+                    required
+                    placeholder="Contoh: Pembayaran DP Program"
+                    class="w-full h-11 px-0 text-sm bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- BARIS 03: Bukti & PIC Pembuat Formulir (CS) -->
+            <div id="section-bukti" class="p-6 sm:p-10 scroll-mt-20">
+              <div class="mb-7">
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">
+                  03 · Bagian Ketiga
+                </p>
+                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23] mt-1">
+                  Bukti &amp; PIC Pembuat Formulir (CS)
+                </h2>
+                <p class="text-sm text-[#1a2f23]/65 mt-1">
+                  Unggah gambar bukti pembayaran yang terbaca jelas dan isi nama CS/Admin Pembayaran.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 items-start">
+                <div>
+                  <label for="input-bukti" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-2">
+                    Upload Bukti Pembayaran <span class="text-red-600" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    id="input-bukti"
+                    name="buktiPembayaran"
+                    accept="image/*"
+                    required
+                    class="block w-full text-sm text-[#1a2f23] file:mr-4 file:py-2.5 file:px-4 file:rounded-[2px] file:border file:border-[#1a2f23]/15 file:font-mono file:text-[11px] file:uppercase file:tracking-[0.08em] file:font-semibold file:bg-[#fdfefc] file:text-[#1a2f23] hover:file:bg-[#e9f5db] cursor-pointer border border-[#1a2f23]/15 rounded-[4px] p-1.5 bg-[#fdfefc]"
+                  />
+                  <p class="mt-2 text-xs text-[#718355]">
+                    Format gambar (JPG, PNG, WEBP). Disimpan aman sebagai data base64.
+                  </p>
+
+                  <div id="bukti-preview-box" class="hidden mt-3 p-3 rounded-[4px] border border-[#1a2f23]/15 bg-[#f4faee] flex items-center gap-3">
+                    <img
+                      id="bukti-preview-img"
+                      src=""
+                      alt="Pratinjau bukti pembayaran"
+                      class="w-16 h-16 object-cover rounded-[2px] border border-[#1a2f23]/15 bg-white shrink-0"
+                    />
+                    <div class="min-w-0 flex-1">
+                      <p id="bukti-preview-name" class="text-xs font-semibold text-[#1a2f23] truncate"></p>
+                      <p class="text-xs text-[#2d6a4f] font-medium mt-0.5">File siap dikirim</p>
+                    </div>
+                    <button
+                      type="button"
+                      id="btn-clear-bukti"
+                      class="px-2.5 py-1.5 font-mono text-[11px] font-semibold text-[#1a2f23]/75 hover:text-red-700 border border-[#1a2f23]/15 bg-white rounded-[2px]"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </div>
+
+                <div class="space-y-6">
+                  <div>
+                    <label for="input-cs-admin" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                      Nama CS / Admin Pembayaran <span class="text-red-600" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="input-cs-admin"
+                      name="csAdminName"
+                      required
+                      placeholder="Contoh: CS Nada atau Admin Pembayaran"
+                      class="w-full h-11 px-0 text-sm bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
+                    />
+                    <p class="mt-1.5 text-xs text-[#718355]">
+                      Diisi manual oleh CS atau Admin Pembayaran yang menginput formulir.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label for="input-whatsapp" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                      Nomor WhatsApp Siswa / Kontak (Opsional)
+                    </label>
+                    <input
+                      type="tel"
+                      id="input-whatsapp"
+                      name="whatsappNumber"
+                      inputmode="tel"
+                      placeholder="Contoh: 081234567890"
+                      class="w-full h-11 px-0 text-sm font-mono bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
+                    />
+                    <p class="mt-1.5 text-xs text-[#718355]">
+                      Opsional sebagai referensi; di portal admin kwitansi tetap bebas dikirim ke kontak WhatsApp mana pun.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Footer -->
+            <div class="px-6 sm:px-10 py-6 bg-[#fdfefc] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <p class="text-xs text-[#718355]">
+                Pastikan seluruh kolom bertanda <span class="text-red-600 font-semibold">*</span> telah terisi dengan benar sebelum mengirim.
+              </p>
+              <button
+                type="submit"
+                id="btn-submit-form"
+                class="px-7 py-3.5 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-white bg-[#2d6a4f] hover:bg-[#1a2f23] rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+              >
+                Kirim Pengajuan Kwitansi
+              </button>
+            </div>
+          </form>
+            </div>
+
+            <!-- Panel Samping Kanan: Panduan Pengisian & Ketentuan -->
+            <aside
+              id="public-guide-panel"
+              aria-label="Panduan Pengisian dan Ketentuan"
+              class="lg:col-span-4 lg:sticky lg:top-24 bg-white/90 backdrop-blur-xs border border-[#1a2f23]/10 rounded-[4px] divide-y divide-[#1a2f23]/10"
+            >
+              <div class="p-6 sm:p-7">
+                <h2 class="font-display text-3xl font-bold text-[#1a2f23]">
+                  Panduan Pengisian &amp; Ketentuan
+                </h2>
+                <p class="mt-1.5 text-xs text-[#1a2f23]/65 leading-relaxed">
+                  Ikuti langkah berikut agar proses verifikasi Finance dan penerbitan kwitansi berjalan lancar.
+                </p>
+
+                <h3 class="mt-6 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">
+                  Panduan Pengisian
+                </h3>
+                <ol class="mt-4 space-y-4 text-xs sm:text-sm text-[#1a2f23]/85 leading-relaxed">
+                  <li class="flex gap-3">
+                    <span class="mt-0.5 font-mono text-xs font-bold text-[#2d6a4f] shrink-0">01</span>
+                    <span>Pilih <strong>Cabang</strong> pendaftaran serta isi <strong>Nama Siswa / Instansi</strong> sesuai data peserta.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="mt-0.5 font-mono text-xs font-bold text-[#2d6a4f] shrink-0">02</span>
+                    <span>Untuk grup sekolah/instansi, centang <strong>Tipe Rombongan</strong> dan pilih jenisnya (Nomor Registrasi otomatis terisi <code class="px-1 py-0.5 bg-[#e9f5db] rounded-[2px] text-xs font-mono">-</code>).</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="mt-0.5 font-mono text-xs font-bold text-[#2d6a4f] shrink-0">03</span>
+                    <span>Isi <strong>Program Kursus</strong> dan pilih tanggal mulai <strong>Periode</strong> melalui kalender.</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="mt-0.5 font-mono text-xs font-bold text-[#2d6a4f] shrink-0">04</span>
+                    <span>Lengkapi detail pembayaran dan masukkan <strong>3 digit akhir rekening penerima</strong> (kolom nonaktif otomatis untuk QRIS/Tunai).</span>
+                  </li>
+                  <li class="flex gap-3">
+                    <span class="mt-0.5 font-mono text-xs font-bold text-[#2d6a4f] shrink-0">05</span>
+                    <span>Unggah foto <strong>Bukti Pembayaran</strong> yang jelas terbaca dan tuliskan <strong>Nama CS / Admin Pembayaran</strong>.</span>
+                  </li>
+                </ol>
+              </div>
+
+              <div class="p-6 sm:p-7 bg-[#e9f5db]/75 rounded-b-[4px]">
+                <h3 class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1a2f23]">
+                  Ketentuan
+                </h3>
+                <ul class="mt-3 space-y-2.5 text-xs text-[#1a2f23]/80 leading-relaxed list-disc pl-4">
+                  <li>Pastikan nominal, tanggal transaksi, dan rekening tujuan sesuai dengan bukti transfer yang diunggah.</li>
+                  <li>Data yang terkirim berstatus <strong>Menunggu Verifikasi</strong> hingga diperiksa oleh staf Finance KILC.</li>
+                  <li>Nomor kwitansi resmi terbit otomatis setelah verifikasi disetujui menjadi <strong>Kwitansi Terbit</strong>.</li>
+                  <li>Pengajuan dengan bukti tidak valid atau berstatus <strong>Ditolak</strong> tidak akan diterbitkan kwitansinya.</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </main>
+
+      <footer class="border-t border-[#1a2f23]/10 bg-[#fdfefc]/85 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[#718355]">
+          <p>Kampung Inggris Language Center (KILC) · Jl. Langkat No.88, Pare, Kab. Kediri</p>
+          <p>Formulir Konfirmasi Pembayaran</p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ==================== WEBSITE 2: PORTAL ADMIN (?mode=admin) ==================== -->
+    <div id="site-admin" class="hidden min-h-screen flex flex-col">
+      <header class="no-print sticky top-0 z-30 bg-[#fdfefc]/85 backdrop-blur-md border-b border-[#1a2f23]/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
+          <a
+            href="?mode=admin"
+            class="font-mono text-xs font-bold uppercase tracking-[0.12em] text-[#1a2f23] whitespace-nowrap shrink-0"
+          >
+            KILC Admin Portal
+          </a>
+
+          <nav aria-label="Navigasi admin" class="hidden sm:flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.12em] text-[#1a2f23]/70">
+            <a href="#resume-section" class="hover:text-[#2d6a4f] transition-colors whitespace-nowrap shrink-0">
+              Resume Data
+            </a>
+            <a href="#table-section" class="hover:text-[#2d6a4f] transition-colors whitespace-nowrap shrink-0">
+              Daftar Pengajuan
+            </a>
+          </nav>
+
+          <div class="flex items-center shrink-0">
+            <button
+              type="button"
+              id="btn-admin-lock"
+              class="hidden px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[#1a2f23] bg-white/80 hover:bg-[#e9f5db] border border-[#1a2f23]/15 rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+            >
+              Kunci Sesi Admin
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="no-print flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <!-- ADMIN PIN GATE -->
+        <section id="admin-pin-gate" class="max-w-md mx-auto my-8 sm:my-14 bg-white border border-[#1a2f23]/10 rounded-[4px] p-6 sm:p-8">
+          <div class="mb-5">
+            <img
+              src="/assets/aistudio/logo_internal_32667169.png"
+              alt="Logo LC Language Center"
+              class="h-12 w-auto object-contain mb-4"
+              onerror="this.style.display='none'"
+            />
+            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f] mb-1.5">
+              Akses Terbatas · Finance KILC
+            </p>
+            <h1 class="font-display text-3xl font-bold text-[#1a2f23] tracking-[-0.02em]">
+              Portal Administrator Kwitansi
+            </h1>
+            <p class="mt-2 text-sm text-[#1a2f23]/70 leading-relaxed">
+              Masukkan PIN administrator untuk memverifikasi pengajuan pembayaran, memilih PIC penandatangan, dan menerbitkan kwitansi resmi.
+            </p>
+          </div>
+
+          <form id="admin-pin-form" class="mt-6 space-y-5">
+            <div>
+              <label for="input-admin-pin" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
+                PIN Administrator
+              </label>
+              <input
+                type="password"
+                id="input-admin-pin"
+                inputmode="numeric"
+                autocomplete="off"
+                required
+                placeholder="Masukkan 4 digit PIN"
+                class="w-full h-11 px-0 text-base font-mono tracking-widest bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] focus:border-[#2d6a4f]"
+              />
+              <p id="admin-pin-error" role="alert" class="hidden mt-2 text-xs font-medium text-red-600">
+                PIN tidak sesuai. Silakan periksa kembali PIN Anda.
+              </p>
+            </div>
+            <button
+              type="submit"
+              id="btn-admin-unlock"
+              class="w-full h-11 px-5 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-white bg-[#2d6a4f] hover:bg-[#1a2f23] rounded-[2px] transition-colors"
+            >
+              Masuk Portal Admin
+            </button>
+            <p class="text-xs text-[#718355] text-center">
+              PIN demo default: <span class="font-mono font-semibold text-[#1a2f23]">1234</span>
+            </p>
+          </form>
+        </section>
+
+        <!-- ADMIN DASHBOARD WORKSPACE -->
+        <section id="admin-dashboard" class="hidden space-y-6">
+          <div id="resume-section" class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f] mb-1.5">
+                Kampung Inggris Language Center · Verifikasi &amp; Penerbitan Kwitansi
+              </p>
+              <h1 class="font-display text-3xl sm:text-4xl font-bold text-[#1a2f23] tracking-[-0.02em]">
+                Dashboard Admin Kwitansi
+              </h1>
+            </div>
+
+            <div class="w-full sm:w-auto flex flex-col sm:flex-row sm:items-end gap-2.5 shrink-0">
+              <div class="w-full sm:w-64">
+                <label for="admin-branch-filter" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1">
+                  Filter Cabang (Resume &amp; Tabel)
+                </label>
+                <select
+                  id="admin-branch-filter"
+                  class="w-full h-10 px-3 text-sm bg-white border border-[#1a2f23]/15 rounded-[2px] text-[#1a2f23] font-medium"
+                >
+                  <option value="Semua Cabang">Semua Cabang</option>
+                  <option value="Pare - Offline">Pare - Offline</option>
+                  <option value="Pare - Online">Pare - Online</option>
+                  <option value="Pare - Rombongan">Pare - Rombongan</option>
+                  <option value="Bogor">Bogor</option>
+                  <option value="Yogya - Mantrijeron">Yogya - Mantrijeron</option>
+                  <option value="Yogya Gondokusuman">Yogya Gondokusuman</option>
+                  <option value="Lampung">Lampung</option>
+                  <option value="Medan">Medan</option>
+                  <option value="Makassar - Panakukang">Makassar - Panakukang</option>
+                  <option value="Makassar - Tamalanrea">Makassar - Tamalanrea</option>
+                  <option value="Bekasi">Bekasi</option>
+                  <option value="Semarang">Semarang</option>
+                  <option value="Surabaya">Surabaya</option>
+                  <option value="Solo">Solo</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                id="btn-admin-refresh"
+                class="h-10 px-4 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2d6a4f] bg-[#e9f5db] hover:bg-[#dceecc] border border-[#2d6a4f]/25 rounded-[2px] transition-colors whitespace-nowrap shrink-0 disabled:opacity-60 disabled:cursor-wait"
+              >
+                Refresh Data
+              </button>
+            </div>
+          </div>
+
+          <!-- Feedback Banner -->
+          <div
+            id="admin-action-banner"
+            role="status"
+            aria-live="polite"
+            class="hidden bg-[#e9f5db] border border-[#2d6a4f]/25 rounded-[4px] px-5 py-3.5 flex items-center justify-between gap-4 text-sm text-[#1a2f23]"
+          >
+            <p id="admin-action-banner-text"></p>
+            <button
+              type="button"
+              id="btn-close-action-banner"
+              class="px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1a2f23] hover:bg-white/70 rounded-[2px] shrink-0"
+            >
+              Tutup
+            </button>
+          </div>
+
+          <!-- Resume Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white border border-[#1a2f23]/10 rounded-[4px] p-5">
+              <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355]">Total Formulir Masuk</p>
+              <p id="stat-total-count" class="mt-2 font-mono text-2xl sm:text-3xl font-bold text-[#1a2f23] tabular-nums">
+                0
+              </p>
+              <p id="stat-branch-caption-1" class="mt-1 text-xs text-[#718355]">Seluruh cabang aktif</p>
+            </div>
+            <div class="bg-white border border-[#1a2f23]/10 rounded-[4px] p-5">
+              <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355]">Total Nominal Pembayaran</p>
+              <p id="stat-total-amount" class="mt-2 font-mono text-2xl sm:text-3xl font-bold text-[#2d6a4f] tabular-nums">
+                Rp 0
+              </p>
+              <p id="stat-branch-caption-2" class="mt-1 text-xs text-[#718355]">Akumulasi resume aktif</p>
+            </div>
+            <div class="bg-white border border-[#1a2f23]/10 rounded-[4px] p-5">
+              <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355]">Menunggu Verifikasi</p>
+              <p id="stat-pending-count" class="mt-2 font-mono text-2xl sm:text-3xl font-bold text-amber-700 tabular-nums">
+                0
+              </p>
+              <p class="mt-1 text-xs text-[#718355]">Perlu tindak lanjut finance</p>
+            </div>
+          </div>
+
+          <!-- Filter Tabs & Search -->
+          <div id="table-section" class="bg-white border border-[#1a2f23]/10 rounded-[4px] p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div role="tablist" aria-label="Filter status pengajuan" class="flex items-center gap-1.5 p-1 bg-[#e9f5db]/60 rounded-[4px] overflow-x-auto max-w-full">
+              <button
+                type="button"
+                role="tab"
+                data-filter-status="Semua"
+                class="filter-tab px-3 py-1.5 text-xs font-semibold rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+              >
+                Semua
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-filter-status="Menunggu Verifikasi"
+                class="filter-tab px-3 py-1.5 text-xs font-semibold rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+              >
+                Menunggu Verifikasi
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-filter-status="Verifikasi Finance"
+                class="filter-tab px-3 py-1.5 text-xs font-semibold rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+              >
+                Verifikasi Finance
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-filter-status="Kwitansi Terbit"
+                class="filter-tab px-3 py-1.5 text-xs font-semibold rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+              >
+                Kwitansi Terbit
+              </button>
+            </div>
+
+            <div class="w-full lg:w-80">
+              <label for="admin-search" class="sr-only">Cari pengajuan berdasarkan nama, cabang, CS, atau nomor kwitansi</label>
+              <input
+                type="search"
+                id="admin-search"
+                placeholder="Cari siswa, CS, cabang, no. kwitansi..."
+                class="w-full h-10 px-3.5 text-sm bg-[#fdfefc] border border-[#1a2f23]/15 rounded-[2px] text-[#1a2f23] placeholder:text-[#1a2f23]/40 focus:bg-white transition-colors"
+              />
+            </div>
+          </div>
+
+          <!-- Data Table -->
+          <div class="bg-white border border-[#1a2f23]/10 rounded-[4px] overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-[#1a2f23]/10 bg-[#f4faee] font-mono text-[11px] uppercase tracking-[0.06em] font-semibold text-[#1a2f23]/80">
+                    <th class="py-3 px-2.5 whitespace-nowrap">Tgl &amp; No. Kwitansi</th>
+                    <th class="py-3 px-2.5">Siswa / Instansi</th>
+                    <th class="py-3 px-2.5">Program &amp; Periode</th>
+                    <th class="py-3 px-2.5 text-right whitespace-nowrap">Nominal</th>
+                    <th class="py-3 px-2.5">CS &amp; PIC Finance</th>
+                    <th class="py-3 px-2.5">Catatan</th>
+                    <th class="py-3 px-2.5 text-center whitespace-nowrap">Bukti</th>
+                    <th class="py-3 px-2.5 whitespace-nowrap">Status &amp; Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-table-body" class="divide-y divide-[#1a2f23]/10 text-sm"></tbody>
+              </table>
+            </div>
+
+            <div id="admin-empty-state" class="hidden py-14 px-6 text-center">
+              <p class="font-display text-xl font-bold text-[#1a2f23]">
+                Tidak ada data pengajuan ditemukan
+              </p>
+              <p class="mt-1 text-sm text-[#1a2f23]/65 max-w-md mx-auto">
+                Belum ada formulir pembayaran pada filter cabang/status ini atau kata kunci pencarian tidak cocok.
+              </p>
+              <button
+                type="button"
+                id="btn-reset-filter"
+                class="mt-4 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.08em] font-semibold text-[#2d6a4f] bg-[#e9f5db] border border-[#2d6a4f]/20 hover:bg-[#dceecc] rounded-[2px] transition-colors"
+              >
+                Reset Semua Filter
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="no-print border-t border-[#1a2f23]/10 bg-[#fdfefc]/85 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[#718355]">
+          <p>Kampung Inggris Language Center (KILC) · Jl. Langkat No.88, Pare, Kab. Kediri</p>
+          <p>Portal Administrator Finance</p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ==================== MODAL: PREVIEW BUKTI PEMBAYARAN ==================== -->
+    <div
+      id="proof-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="proof-modal-title"
+      class="no-print hidden fixed inset-0 z-50 bg-[#1a2f23]/70 backdrop-blur-xs flex items-center justify-center p-4"
+    >
+      <div class="bg-white border border-[#1a2f23]/15 rounded-[4px] max-w-2xl w-full overflow-hidden shadow-xl">
+        <div class="px-5 py-4 border-b border-[#1a2f23]/10 flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <h2 id="proof-modal-title" class="font-display text-xl font-bold text-[#1a2f23] truncate">
+              Bukti Pembayaran
+            </h2>
+            <p id="proof-modal-subtitle" class="text-xs text-[#718355] truncate mt-0.5"></p>
+          </div>
+          <button
+            type="button"
+            id="btn-close-proof-modal"
+            class="px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1a2f23] bg-[#f4faee] hover:bg-[#e9f5db] border border-[#1a2f23]/15 rounded-[2px] transition-colors shrink-0"
+          >
+            Tutup
+          </button>
+        </div>
+        <div class="p-5 bg-[#fdfefc] flex flex-col items-center justify-center gap-3 max-h-[75vh] overflow-auto">
+          <img
+            id="proof-modal-img"
+            src=""
+            alt="Bukti pembayaran"
+            class="max-w-full max-h-[60vh] object-contain rounded-[2px] border border-[#1a2f23]/15 bg-white"
+          />
+          <a
+            id="proof-modal-external-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hidden px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2d6a4f] bg-[#e9f5db] hover:bg-[#dceecc] border border-[#2d6a4f]/25 rounded-[2px] transition-colors"
+          >
+            Buka File Bukti di Tab Baru
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MODAL: CETAK KWITANSI, PARAF ADJUSTER & WHATSAPP ==================== -->
+    <div
+      id="receipt-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="receipt-modal-heading"
+      class="hidden fixed inset-0 z-50 bg-[#1a2f23]/75 overflow-y-auto p-4 sm:p-8 flex items-start justify-center"
+    >
+      <div id="receipt-modal-dialog" class="w-full max-w-4xl my-auto">
+        <!-- Modal Action Toolbar (Hidden on Print) -->
+        <div class="no-print bg-white border border-[#1a2f23]/15 rounded-t-[4px] px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="receipt-modal-heading" class="font-display text-xl font-bold text-[#1a2f23]">
+              Cetak / Unduh Kwitansi &amp; Kirim WhatsApp
+            </h2>
+            <p class="text-xs text-[#718355]">
+              Pilih PIC penandatangan dan unggah paraf (opsional, otomatis menyesuaikan kolom), lalu cetak PDF ½ A4 portrait, salin/unduh gambar, atau kirim via WhatsApp.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              id="btn-copy-receipt-img"
+              class="px-3.5 py-2 text-xs font-semibold text-[#2d6a4f] bg-[#e9f5db] hover:bg-[#dceecc] border border-[#2d6a4f]/20 rounded-[2px] transition-colors whitespace-nowrap"
+            >
+              Salin Gambar Kwitansi
+            </button>
+            <button
+              type="button"
+              id="btn-download-receipt-png"
+              class="px-3.5 py-2 text-xs font-semibold text-[#1a2f23] bg-[#fdfefc] hover:bg-[#e9f5db] border border-[#1a2f23]/15 rounded-[2px] transition-colors whitespace-nowrap"
+            >
+              Unduh Gambar Kwitansi
+            </button>
+            <button
+              type="button"
+              id="btn-print-receipt"
+              class="px-4 py-2 text-xs font-semibold text-white bg-[#2d6a4f] hover:bg-[#1a2f23] rounded-[2px] transition-colors whitespace-nowrap"
+            >
+              Cetak / Simpan PDF (½ A4)
+            </button>
+            <button
+              type="button"
+              id="btn-close-receipt-modal"
+              class="px-3.5 py-2 text-xs font-semibold text-[#1a2f23] bg-[#fdfefc] hover:bg-[#e9f5db] border border-[#1a2f23]/15 rounded-[2px] transition-colors whitespace-nowrap"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel Kontrol Persiapan Cetak (Hidden on Print) -->
+        <div class="no-print bg-[#fdfefc] border-x border-b border-[#1a2f23]/15 px-5 py-4 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Pilih PIC Penandatangan -->
+            <div>
+              <label for="rcp-select-pic" class="block text-xs font-semibold text-[#1a2f23] mb-1">
+                Pilih PIC Penandatangan Kwitansi (Staf Finance)
+              </label>
+              <select
+                id="rcp-select-pic"
+                class="w-full h-10 px-3 text-sm bg-white border border-[#1a2f23]/20 rounded-[2px] text-[#1a2f23]"
+              >
+                <option value="M. Faisal Aji S.">M. Faisal Aji S.</option>
+                <option value="Nur Ellah">Nur Ellah</option>
+                <option value="Dian Nailur R.">Dian Nailur R.</option>
+                <option value="Indra Suwanto">Indra Suwanto</option>
+                <option value="Ajeng Ayu A. S.">Ajeng Ayu A. S.</option>
+                <option value="Kharisma Febrianti">Kharisma Febrianti</option>
+              </select>
+            </div>
+
+            <!-- Unggah Paraf / Tanda Tangan -->
+            <div>
+              <label for="rcp-upload-paraf" class="block text-xs font-semibold text-[#1a2f23] mb-1">
+                Unggah Paraf / Tanda Tangan (PNG / JPG — Otomatis Menyesuaikan Kolom)
+              </label>
+              <div class="flex items-center gap-2">
+                <input
+                  type="file"
+                  id="rcp-upload-paraf"
+                  accept="image/*"
+                  class="block w-full text-xs text-[#1a2f23] file:mr-3 file:py-1.5 file:px-3 file:rounded-[2px] file:border file:border-[#1a2f23]/20 file:text-xs file:font-semibold file:bg-white file:text-[#1a2f23] hover:file:bg-[#e9f5db] cursor-pointer border border-[#1a2f23]/20 rounded-[2px] p-1 bg-white"
+                />
+                <button
+                  type="button"
+                  id="rcp-clear-paraf"
+                  class="hidden h-9 px-3 text-xs font-semibold text-red-700 bg-white border border-red-200 hover:bg-red-50 rounded-[2px] whitespace-nowrap shrink-0"
+                >
+                  Hapus Paraf
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fitur Kirim Kwitansi via WhatsApp (Bebas ke siapa pun + otomatis sertakan kwitansi) -->
+          <div class="pt-3 border-t border-[#1a2f23]/10 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <label for="rcp-wa-free-mode" class="inline-flex items-center gap-2 text-xs font-semibold text-[#1a2f23] cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  id="rcp-wa-free-mode"
+                  checked
+                  class="h-4 w-4 rounded-[2px] border-[#2d6a4f]/40 text-[#2d6a4f] cursor-pointer accent-[#2d6a4f]"
+                />
+                <span>Kirim ke siapa pun saat buka WhatsApp (Pilih kontak langsung di WA)</span>
+              </label>
+
+              <button
+                type="button"
+                id="rcp-wa-use-form-num"
+                class="hidden text-xs font-medium text-[#2d6a4f] hover:underline"
+              ></button>
+            </div>
+
+            <div class="flex flex-col lg:flex-row lg:items-end gap-3">
+              <div class="w-full lg:w-56 shrink-0">
+                <label for="rcp-wa-phone" class="block text-xs font-semibold text-[#1a2f23] mb-1">
+                  Nomor WA Spesifik (Opsional)
+                </label>
+                <input
+                  type="tel"
+                  id="rcp-wa-phone"
+                  placeholder="Pilih kontak bebas di WA"
+                  class="w-full h-10 px-3 text-sm font-mono bg-white border border-[#1a2f23]/20 rounded-[2px] text-[#1a2f23] disabled:bg-[#f4f7f2] disabled:text-[#1a2f23]/45"
+                />
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <label for="rcp-wa-message" class="block text-xs font-semibold text-[#1a2f23] mb-1">
+                  Pesan Otomatis WhatsApp
+                </label>
+                <textarea
+                  id="rcp-wa-message"
+                  rows="2"
+                  class="w-full px-3 py-2 text-xs bg-white border border-[#1a2f23]/20 rounded-[2px] text-[#1a2f23] leading-relaxed"
+                ></textarea>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  id="rcp-wa-copy"
+                  class="h-10 px-3.5 text-xs font-semibold text-[#1a2f23] bg-white border border-[#1a2f23]/20 hover:bg-[#e9f5db] rounded-[2px] transition-colors whitespace-nowrap"
+                >
+                  Salin Pesan
+                </button>
+                <a
+                  id="rcp-wa-link"
+                  href="https://wa.me/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="h-10 px-4 inline-flex items-center justify-center text-xs font-semibold text-white bg-[#2d6a4f] hover:bg-[#1a2f23] rounded-[2px] transition-colors whitespace-nowrap"
+                >
+                  Kirim via WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <p id="rcp-wa-status" role="status" class="hidden text-xs font-medium text-[#2d6a4f] bg-[#e9f5db] border border-[#2d6a4f]/25 rounded-[2px] px-3 py-2"></p>
+          </div>
+        </div>
+
+        <!-- Printable Receipt Sheet (Half A4 Portrait: 210mm x 148mm) -->
+        <article
+          id="receipt-sheet"
+          class="relative overflow-hidden bg-white border border-slate-200 border-t-0 sm:rounded-b-xl p-5 sm:p-6 text-slate-900"
+        >
+          <!-- Watermark Latar Belakang Resmi KILC -->
+          <div
+            id="rcp-watermark-layer"
+            aria-hidden="true"
+            class="pointer-events-none select-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
+          >
+            <img
+              src="/assets/aistudio/logo_internal_32667169.png"
+              alt=""
+              class="w-72 sm:w-80 opacity-[0.07] -rotate-12 object-contain"
+            />
+          </div>
+
+          <!-- KOP SURAT DENGAN LOGO RESMI KILC -->
+          <div class="relative z-10 flex items-center gap-4 pb-3 border-b-2 border-slate-900">
+            <img
+              id="rcp-logo-img"
+              src="/assets/aistudio/logo_internal_32667169.png"
+              alt="Logo Kampung Inggris Language Center"
+              class="h-12 sm:h-14 w-auto object-contain shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <h3 class="font-display text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                Kampung Inggris Language Center
+              </h3>
+              <p class="mt-0.5 text-xs text-slate-700 leading-snug max-w-xl">
+                Jl. Langkat No.88, Singgahan, Pelem, Kec. Pare, Kabupaten Kediri, Jawa Timur.
+              </p>
+            </div>
+          </div>
+
+          <!-- Judul & Nomor Kwitansi Otomatis -->
+          <div class="relative z-10 mt-3 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1.5 pb-2.5 border-b border-slate-200">
+            <h4 class="font-display text-base font-bold tracking-wide uppercase text-slate-900">
+              Kwitansi Pembayaran
+            </h4>
+            <div class="text-xs sm:text-sm">
+              <span class="text-slate-500 font-medium">No. Kwitansi: </span>
+              <span id="rcp-number" class="font-mono font-bold text-slate-900 tabular-nums"></span>
+            </div>
+          </div>
+
+          <!-- Isi Kwitansi -->
+          <dl class="relative z-10 mt-2.5 space-y-1.5 text-xs sm:text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-3 items-baseline">
+              <dt class="sm:col-span-4 font-medium text-slate-600">Telah terima dari</dt>
+              <dd class="sm:col-span-8 font-semibold text-slate-900 border-b border-dotted border-slate-300 pb-0.5">
+                <span id="rcp-payer"></span>
+                <span id="rcp-payer-meta" class="font-normal text-xs text-slate-600 ml-1"></span>
+              </dd>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-3 items-baseline">
+              <dt class="sm:col-span-4 font-medium text-slate-600">Uang Sejumlah</dt>
+              <dd
+                id="rcp-terbilang"
+                class="sm:col-span-8 font-semibold italic text-slate-900 bg-slate-50/90 border border-slate-200 rounded px-2.5 py-1.5"
+              ></dd>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-3 items-baseline">
+              <dt class="sm:col-span-4 font-medium text-slate-600">Untuk Pembayaran</dt>
+              <dd class="sm:col-span-8 text-slate-900 border-b border-dotted border-slate-300 pb-0.5">
+                <span id="rcp-keterangan" class="font-medium"></span>
+                <span id="rcp-payment-meta" class="text-xs text-slate-600 ml-1"></span>
+              </dd>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-3 items-baseline">
+              <dt class="sm:col-span-4 font-medium text-slate-600">Program</dt>
+              <dd id="rcp-program" class="sm:col-span-8 font-medium text-slate-900 border-b border-dotted border-slate-300 pb-0.5"></dd>
+            </div>
+          </dl>
+
+          <!-- Rincian Nominal & Tanggal + Stempel Digital + Tanda Tangan / Paraf -->
+          <div class="relative z-10 mt-3.5 pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-4">
+            <div class="sm:max-w-xs w-full">
+              <p class="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">
+                Jumlah Pembayaran
+              </p>
+              <div class="border-2 border-slate-900 bg-slate-50/95 px-3.5 py-2 rounded">
+                <span id="rcp-amount" class="font-mono text-lg sm:text-xl font-bold text-slate-900 tabular-nums"></span>
+              </div>
+              <p id="rcp-branch-date" class="mt-1.5 text-xs text-slate-500"></p>
+            </div>
+
+            <!-- Kolom Tanggal, Paraf Kiri + Stempel Digital Resmi KILC di atas kolom paraf (1/4 masuk area paraf), Nama PIC -->
+            <div class="relative w-full sm:w-72 text-center sm:text-left sm:ml-auto">
+              <p id="rcp-today-date" class="text-xs sm:text-sm font-medium text-slate-900"></p>
+              <p id="rcp-pic-position" class="text-[11px] sm:text-xs text-slate-600 mt-0.5"></p>
+
+              <!-- Wrapper Paraf + Stempel Terverifikasi (stempel di atas kolom paraf, 1/4 bagiannya masuk kolom paraf) -->
+              <div class="relative my-1.5">
+                <svg
+                  id="rcp-digital-stamp"
+                  aria-hidden="true"
+                  viewBox="0 0 180 180"
+                  class="pointer-events-none select-none absolute left-2 sm:left-[-72px] top-1/2 -translate-y-1/2 w-24 h-24 text-kilc-800 opacity-80 z-20"
+                >
+                  <defs>
+                    <path id="rcpStampTopArc" d="M 30,90 A 60,60 0 1,1 150,90" />
+                    <path id="rcpStampBottomArc" d="M 152,95 A 62,62 0 1,1 28,95" />
+                  </defs>
+                  <g transform="rotate(-12 90 90)">
+                    <circle cx="90" cy="90" r="82" fill="none" stroke="currentColor" stroke-width="3.2" />
+                    <circle cx="90" cy="90" r="75" fill="none" stroke="currentColor" stroke-width="1.2" />
+                    <circle cx="90" cy="90" r="50" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 2" />
+                    <text fill="currentColor" font-size="9.5" font-weight="800" letter-spacing="1.4" font-family="sans-serif">
+                      <textPath href="#rcpStampTopArc" startOffset="50%" text-anchor="middle">
+                        KAMPUNG INGGRIS LC
+                      </textPath>
+                    </text>
+                    <text fill="currentColor" font-size="9" font-weight="700" letter-spacing="1.3" font-family="sans-serif">
+                      <textPath href="#rcpStampBottomArc" startOffset="50%" text-anchor="middle">
+                        FINANCE · PARE KEDIRI
+                      </textPath>
+                    </text>
+                    <rect x="20" y="72" width="140" height="36" rx="4" fill="#ffffff" fill-opacity="0.76" stroke="currentColor" stroke-width="2" />
+                    <text x="90" y="88" text-anchor="middle" fill="currentColor" font-size="11.5" font-weight="800" letter-spacing="1.8" font-family="sans-serif">
+                      TERVERIFIKASI
+                    </text>
+                    <text x="90" y="102" text-anchor="middle" fill="currentColor" font-size="8.5" font-weight="700" letter-spacing="1.4" font-family="sans-serif">
+                      SAH · KILC RESMI
+                    </text>
+                  </g>
+                </svg>
+
+                <!-- Area Paraf / Tanda Tangan (posisi kiri di kolom paraf) -->
+                <div
+                  id="rcp-paraf-box"
+                  class="h-[68px] flex items-center justify-start overflow-hidden py-1 pr-1 relative z-10"
+                  aria-label="Area tanda tangan"
+                >
+                  <img
+                    id="rcp-paraf-img"
+                    src=""
+                    alt="Paraf penandatangan kwitansi"
+                    class="hidden max-h-full max-w-full object-contain object-left select-none"
+                  />
+                </div>
+              </div>
+
+              <!-- Nama Staf Tanpa Garis Bawah -->
+              <p id="rcp-pic-name" class="text-xs sm:text-sm font-bold text-slate-900"></p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        // =========================================================================
+        // KONFIGURASI INTEGRASI GOOGLE APPS SCRIPT
+        // =========================================================================
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzsFyB-ibOIKqrnzUzpgiIzCdVmWpBrcpVhuB8LNg1SSA22XBN-BQlCmPXlO4lXSbew/exec";
+
+        const ADMIN_PIN = "1234";
+        const SESSION_KEY_ADMIN = "kilc_admin_unlocked_v1";
+
+        const PIC_OPTIONS = [
+          "M. Faisal Aji S.",
+          "Nur Ellah",
+          "Dian Nailur R.",
+          "Indra Suwanto",
+          "Ajeng Ayu A. S.",
+          "Kharisma Febrianti"
+        ];
+
+        const ROMAN_MONTHS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+        const INDONESIAN_MONTHS = [
+          "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+          "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ];
+
+        let adminRecords = [];
+        let picSignatureMap = {};
+        let isAdminLoading = false;
+        let currentBranchFilter = "Semua Cabang";
+        let currentStatusFilter = "Semua";
+        let currentSearch = "";
+        let uploadedProofBase64 = "";
+        let uploadedProofName = "";
+        let activeReceiptId = null;
+        let currentParafDataUrl = "";
+
+        // ==================== PURE HELPER FUNCTIONS ====================
+        function isAdminModeUrl() {
+          const params = new URLSearchParams(window.location.search);
+          return (params.get("mode") || "").trim().toLowerCase() === "admin";
+        }
+
+        function toRomanMonth(monthIndex) {
+          return ROMAN_MONTHS[monthIndex] || "I";
+        }
+
+        function formatIndonesianDate(dateObj) {
+          const d = dateObj instanceof Date ? dateObj : new Date();
+          return d.getDate() + " " + INDONESIAN_MONTHS[d.getMonth()] + " " + d.getFullYear();
+        }
+
+        function formatShortDate(isoOrDateStr) {
+          if (!isoOrDateStr) return "-";
+          if (/^\d{4}-\d{2}-\d{2}$/.test(isoOrDateStr)) {
+            const parts = isoOrDateStr.split("-");
+            return parts[2] + "/" + parts[1] + "/" + parts[0];
+          }
+          const d = new Date(isoOrDateStr);
+          if (Number.isNaN(d.getTime())) return isoOrDateStr;
+          const dd = String(d.getDate()).padStart(2, "0");
+          const mm = String(d.getMonth() + 1).padStart(2, "0");
+          const yyyy = d.getFullYear();
+          return dd + "/" + mm + "/" + yyyy;
+        }
+
+        function parseRupiah(val) {
+          if (typeof val === "number") return Number.isFinite(val) ? Math.max(0, Math.floor(val)) : 0;
+          const digits = String(val || "").replace(/\D/g, "");
+          return digits ? parseInt(digits, 10) || 0 : 0;
+        }
+
+        function formatRupiahInput(val) {
+          const num = parseRupiah(val);
+          if (num === 0) return "";
+          return "Rp " + num.toLocaleString("id-ID");
+        }
+
+        function formatRupiahDisplay(num) {
+          return "Rp " + parseRupiah(num).toLocaleString("id-ID");
+        }
+
+        function terbilangSegment(n) {
+          const units = [
+            "", "Satu", "Dua", "Tiga", "Empat", "Lima",
+            "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"
+          ];
+          if (n < 12) return units[n];
+          if (n < 20) return terbilangSegment(n - 10) + " Belas";
+          if (n < 100) {
+            const tens = Math.floor(n / 10);
+            const rem = n % 10;
+            return units[tens] + " Puluh" + (rem > 0 ? " " + terbilangSegment(rem) : "");
+          }
+          if (n < 200) {
+            const rem = n % 100;
+            return "Seratus" + (rem > 0 ? " " + terbilangSegment(rem) : "");
+          }
+          if (n < 1000) {
+            const hundreds = Math.floor(n / 100);
+            const rem = n % 100;
+            return units[hundreds] + " Ratus" + (rem > 0 ? " " + terbilangSegment(rem) : "");
+          }
+          if (n < 2000) {
+            const rem = n % 1000;
+            return "Seribu" + (rem > 0 ? " " + terbilangSegment(rem) : "");
+          }
+          if (n < 1000000) {
+            const thousands = Math.floor(n / 1000);
+            const rem = n % 1000;
+            return terbilangSegment(thousands) + " Ribu" + (rem > 0 ? " " + terbilangSegment(rem) : "");
+          }
+          if (n < 1000000000) {
+            const millions = Math.floor(n / 1000000);
+            const rem = n % 1000000;
+            return terbilangSegment(millions) + " Juta" + (rem > 0 ? " " + terbilangSegment(rem) : "");
+          }
+          if (n < 1000000000000) {
+            const billions = Math.floor(n / 1000000000);
+            const rem = n % 1000000000;
+            return terbilangSegment(billions) + " Miliar" + (rem > 0 ? " " + terbilangSegment(rem) : "");
+          }
+          const trillions = Math.floor(n / 1000000000000);
+          const rem = n % 1000000000000;
+          return terbilangSegment(trillions) + " Triliun" + (rem > 0 ? " " + terbilangSegment(rem) : "");
+        }
+
+        function terbilangRupiah(amount) {
+          const num = parseRupiah(amount);
+          if (num === 0) return "Nol Rupiah";
+          return terbilangSegment(num).trim() + " Rupiah";
+        }
+
+        function getBranchCode(branch) {
+          return String(branch || "")
+            .trim()
+            .toUpperCase()
+            .replace(/\s*-\s*/g, "-")
+            .replace(/\s+/g, "-");
+        }
+
+        function isPareBranch(branch) {
+          return String(branch || "").trim().toLowerCase().startsWith("pare");
+        }
+
+        function generateReceiptNumber(branch, isRombongan, seqNumber, dateObj) {
+          const d = dateObj instanceof Date ? dateObj : new Date();
+          const code = getBranchCode(branch);
+          const roman = toRomanMonth(d.getMonth());
+          const seq = String(seqNumber).padStart(3, "0");
+          const parts = ["KILC", code];
+          if (Boolean(isRombongan) && !isPareBranch(branch)) {
+            parts.push("RO");
+          }
+          parts.push(roman, seq);
+          return parts.join("/");
+        }
+
+        function getPicPosition(picName) {
+          const pic = String(picName || "").trim();
+          if (pic === "M. Faisal Aji S.") {
+            return "Manajer Akuntansi dan Keuangan";
+          }
+          if (pic === "Nur Ellah" || pic === "Dian Nailur R.") {
+            return "Staf Akuntansi dan Keuangan Pare";
+          }
+          if (
+            pic === "Indra Suwanto" ||
+            pic === "Ajeng Ayu A. S." ||
+            pic === "Kharisma Febrianti"
+          ) {
+            return "Staf Akuntansi dan Keuangan Cabang";
+          }
+          return "Staf Akuntansi dan Keuangan";
+        }
+
+        function requiresAccountSuffix(method) {
+          const m = String(method || "").trim().toLowerCase();
+          return m !== "" && m !== "qris" && m !== "tunai";
+        }
+
+        function normalizeWhatsappNumber(phone) {
+          const digits = String(phone || "").replace(/\D/g, "");
+          if (!digits) return "";
+          if (digits.startsWith("0")) return "62" + digits.slice(1);
+          if (digits.startsWith("8")) return "62" + digits;
+          return digits;
+        }
+
+        function buildWhatsappReceiptMessage(item) {
+          return [
+            "Halo *" + item.namaSiswa + "*," ,
+            "",
+            "Berikut kami sampaikan *Kwitansi Pembayaran Resmi* dari *Kampung Inggris Language Center (KILC)*:",
+            "",
+            "• *No. Kwitansi:* " + (item.receiptNumber || "-"),
+            "• *Cabang:* " + item.cabang,
+            "• *Program:* " + item.programKursus + " (Periode " + formatShortDate(item.periode) + ")",
+            "• *Nominal:* " + formatRupiahDisplay(item.jumlahPembayaran) + " (" + terbilangRupiah(item.jumlahPembayaran) + ")",
+            "• *Keterangan:* " + item.keterangan,
+            "",
+            "Terima kasih telah mempercayakan pembelajaran bahasa Inggris Anda bersama KILC."
+          ].join("\n");
+        }
+
+        function buildWhatsappUrl(phone, message) {
+          const normalized = normalizeWhatsappNumber(phone);
+          const encoded = encodeURIComponent(message || "");
+          return normalized
+            ? "https://wa.me/" + normalized + "?text=" + encoded
+            : "https://wa.me/?text=" + encoded;
+        }
+
+        function escapeXml(str) {
+          return String(str || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        // ==================== GOOGLE APPS SCRIPT ONLINE LAYER ====================
+        function splitDataUrl(dataUrl, fallbackMime) {
+          const fallback = fallbackMime || "image/jpeg";
+          const raw = String(dataUrl || "").trim();
+          if (!raw) return { mimeType: fallback, base64: "" };
+          const match = raw.match(/^data:([^;]+);base64,(.*)$/s);
+          if (match) {
+            return { mimeType: match[1] || fallback, base64: match[2] || "" };
+          }
+          const commaIdx = raw.indexOf(",");
+          if (commaIdx !== -1 && raw.startsWith("data:")) {
+            return { mimeType: fallback, base64: raw.slice(commaIdx + 1) };
+          }
+          return { mimeType: fallback, base64: raw };
+        }
+
+        function resolveProofPreviewSrc(rawSrc, mimeType) {
+          const val = String(rawSrc || "").trim();
+          if (!val) return { imgSrc: "", externalUrl: "" };
+          if (/^https?:\/\//i.test(val)) {
+            const driveMatch = val.match(/drive\.google\.com\/file\/d\/([^/]+)/i) || val.match(/[?&]id=([^&]+)/i);
+            const imgSrc = driveMatch
+              ? "https://drive.google.com/thumbnail?id=" + encodeURIComponent(driveMatch[1]) + "&sz=w1200"
+              : val;
+            return { imgSrc: imgSrc, externalUrl: val };
+          }
+          if (val.startsWith("data:")) {
+            return { imgSrc: val, externalUrl: "" };
+          }
+          return { imgSrc: "data:" + (mimeType || "image/jpeg") + ";base64," + val, externalUrl: "" };
+        }
+
+        function normalizeAppsScriptRecord(raw) {
+          const r = raw || {};
+          const isRombonganVal = r.isRombongan;
+          const isRombongan =
+            typeof isRombonganVal === "boolean"
+              ? isRombonganVal
+              : String(isRombonganVal || "").trim().toLowerCase() === "true" ||
+                String(isRombonganVal || "").trim().toLowerCase() === "ya";
+
+          const mimeType = String(r.mimeType || "image/jpeg").trim() || "image/jpeg";
+          const rawFile = String(r.buktiBase64 || r.fileUrl || r.buktiUrl || r.fileData || "").trim();
+          const proofResolved = resolveProofPreviewSrc(rawFile, mimeType);
+
+          return {
+            id: String(r.id || ""),
+            cabang: String(r.cabang || ""),
+            namaSiswa: String(r.namaSiswa || ""),
+            isRombongan: isRombongan,
+            jenisRombongan: String(r.jenisRombongan || ""),
+            nomorRegistrasi: String(r.nomorRegistrasi || r.noRegistrasi || "-"),
+            programKursus: String(r.programKursus || r.program || ""),
+            periode: String(r.periode || ""),
+            metodePengiriman: String(r.metodePengiriman || r.metodeBayar || ""),
+            digitRekening: String(r.digitRekening || ""),
+            tanggalPembayaran: String(r.tanggalPembayaran || r.tglBayar || ""),
+            jumlahPembayaran: parseRupiah(r.jumlahPembayaran !== undefined ? r.jumlahPembayaran : r.jumlahBayar),
+            keterangan: String(r.keterangan || ""),
+            buktiBase64: proofResolved.imgSrc,
+            buktiExternalUrl: proofResolved.externalUrl,
+            buktiNama: String(r.buktiNama || r.fileName || "bukti-pembayaran"),
+            mimeType: mimeType,
+            csAdminName: String(r.csAdminName || r.cs || ""),
+            whatsappNumber: normalizeWhatsappNumber(String(r.whatsappNumber || r.whatsapp || "")),
+            pic: String(r.pic || ""),
+            catatan: String(r.catatan || ""),
+            status: String(r.status || "Menunggu Verifikasi").trim() || "Menunggu Verifikasi",
+            receiptNumber: String(r.receiptNumber || r.noKwitansi || ""),
+            parafBase64: String(r.parafBase64 || ""),
+            createdAt: String(r.createdAt || r.timestamp || ""),
+            issuedAt: String(r.issuedAt || "")
+          };
+        }
+
+        function getRecords() {
+          return adminRecords;
+        }
+
+        function computeNextReceiptSequence(records) {
+          let maxSeq = 0;
+          (records || []).forEach(function (item) {
+            const code = String(item.receiptNumber || item.noKwitansi || "").trim();
+            const match = code.match(/\/(\d+)$/);
+            if (match) {
+              const n = parseInt(match[1], 10);
+              if (Number.isFinite(n) && n > maxSeq) maxSeq = n;
+            }
+          });
+          return maxSeq + 1;
+        }
+
+        function getSignatureMap() {
+          return picSignatureMap;
+        }
+
+        function saveSignatureForPic(picName, dataUrl) {
+          if (!picName) return;
+          if (dataUrl) {
+            picSignatureMap[picName] = dataUrl;
+          } else {
+            delete picSignatureMap[picName];
+          }
+        }
+
+        async function postToAppsScript(payload) {
+          const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            redirect: "follow",
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            throw new Error("Server Google Apps Script merespons dengan status " + response.status);
+          }
+          const rawText = await response.text();
+          let parsed = null;
+          try {
+            parsed = rawText ? JSON.parse(rawText) : null;
+          } catch (e) {
+            parsed = null;
+          }
+          if (parsed && (parsed.status === "error" || parsed.success === false)) {
+            throw new Error(parsed.message || parsed.error || "Permintaan ditolak oleh Google Apps Script.");
+          }
+          return parsed || { status: "ok" };
+        }
+
+        async function fetchRecordsFromAppsScript(options) {
+          if (isAdminLoading) return adminRecords;
+          const opts = options || {};
+          const refreshBtn = document.getElementById("btn-admin-refresh");
+          isAdminLoading = true;
+          if (refreshBtn) {
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = "Memuat...";
+          }
+          if (isAdminUnlocked()) {
+            renderAdminDashboard();
+          }
+
+          try {
+            const response = await fetch(WEB_APP_URL, {
+              method: "GET",
+              redirect: "follow"
+            });
+            if (!response.ok) {
+              throw new Error("Gagal mengambil data (HTTP " + response.status + ")");
+            }
+            const res = await response.json();
+            if (res && (res.status === "error" || res.success === false)) {
+              throw new Error(res.message || res.error || "Respon error dari Google Apps Script.");
+            }
+            const list = Array.isArray(res && res.data) ? res.data : (Array.isArray(res) ? res : []);
+            adminRecords = list
+              .map(normalizeAppsScriptRecord)
+              .filter(function (item) {
+                return item.status !== "Ditolak";
+              });
+            if (opts.notifyOnSuccess) {
+              showAdminBanner("Data berhasil diperbarui dari Google Sheets (" + adminRecords.length + " pengajuan aktif).");
+            }
+            return adminRecords;
+          } catch (err) {
+            console.error("Gagal mengambil data dari Google Apps Script:", err);
+            if (isAdminUnlocked()) {
+              showAdminBanner("Gagal memuat data dari Google Sheets: " + (err.message || "Periksa koneksi internet Anda."));
+            }
+            return adminRecords;
+          } finally {
+            isAdminLoading = false;
+            if (refreshBtn) {
+              refreshBtn.disabled = false;
+              refreshBtn.textContent = "Refresh Data";
+            }
+            if (isAdminUnlocked()) {
+              renderAdminDashboard();
+            }
+          }
+        }
+
+        function fillTodayReceiptDate() {
+          const todayFormatted = formatIndonesianDate(new Date());
+          const dateEl = document.getElementById("rcp-today-date");
+          if (dateEl) {
+            dateEl.textContent = "Pare, " + todayFormatted;
+          }
+          return todayFormatted;
+        }
+
+        // ==================== CANVAS RECEIPT IMAGE RENDERER (OTOMATIS SERTAKAN KWITANSI) ====================
+        function loadImageForCanvas(src) {
+          return new Promise(function (resolve) {
+            if (!src) {
+              resolve(null);
+              return;
+            }
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = function () {
+              resolve(img);
+            };
+            img.onerror = function () {
+              resolve(null);
+            };
+            img.src = src;
+          });
+        }
+
+        function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+          const words = String(text || "").split(/\s+/);
+          let line = "";
+          let curY = y;
+          for (let i = 0; i < words.length; i++) {
+            const testLine = line ? line + " " + words[i] : words[i];
+            if (ctx.measureText(testLine).width > maxWidth && line) {
+              ctx.fillText(line, x, curY);
+              line = words[i];
+              curY += lineHeight;
+            } else {
+              line = testLine;
+            }
+          }
+          if (line) ctx.fillText(line, x, curY);
+          return curY;
+        }
+
+        function drawCanvasDigitalStamp(ctx, cx, cy) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.scale(0.9, 0.9);
+          ctx.rotate((-12 * Math.PI) / 180);
+          ctx.globalAlpha = 0.78;
+          const ink = "#0f4c3a";
+          ctx.strokeStyle = ink;
+          ctx.fillStyle = ink;
+
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, 74, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(0, 0, 67, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.setLineDash([4, 3]);
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, 46, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.font = "800 10px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("KAMPUNG INGGRIS LC", 0, -52);
+          ctx.font = "700 9.5px sans-serif";
+          ctx.fillText("FINANCE · PARE KEDIRI", 0, 58);
+
+          ctx.fillStyle = "rgba(255, 255, 255, 0.78)";
+          ctx.fillRect(-66, -18, 132, 36);
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 2.2;
+          ctx.strokeRect(-66, -18, 132, 36);
+
+          ctx.fillStyle = ink;
+          ctx.font = "800 12px sans-serif";
+          ctx.fillText("TERVERIFIKASI", 0, -1);
+          ctx.font = "700 9px sans-serif";
+          ctx.fillText("SAH · KILC RESMI", 0, 12);
+
+          ctx.restore();
+          ctx.textAlign = "left";
+        }
+
+        async function renderReceiptCanvasBlob(item, parafDataUrl) {
+          // Proporsi Setengah Kertas A4 Portrait (210mm x 148mm)
+          const W = 1200;
+          const H = 846;
+          const canvas = document.createElement("canvas");
+          canvas.width = W;
+          canvas.height = H;
+          const ctx = canvas.getContext("2d");
+
+          // Latar putih bersih + frame luar
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, W, H);
+          ctx.strokeStyle = "#0f172a";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(24, 24, W - 48, H - 48);
+
+          const logoImg = await loadImageForCanvas("/assets/aistudio/logo_internal_32667169.png");
+
+          // Watermark Logo Resmi KILC di tengah kwitansi
+          if (logoImg) {
+            ctx.save();
+            ctx.globalAlpha = 0.075;
+            ctx.translate(W / 2, H / 2 + 24);
+            ctx.rotate((-12 * Math.PI) / 180);
+            const wmW = 460;
+            const wmH = Math.round((logoImg.height / logoImg.width) * wmW);
+            ctx.drawImage(logoImg, -wmW / 2, -wmH / 2, wmW, wmH);
+            ctx.restore();
+          }
+
+          // Kop Surat: Logo + Nama Lembaga + Alamat
+          let headerTextX = 64;
+          if (logoImg) {
+            const targetH = 82;
+            const targetW = Math.round((logoImg.width / logoImg.height) * targetH);
+            ctx.drawImage(logoImg, 64, 52, targetW, targetH);
+            headerTextX = 64 + targetW + 28;
+          }
+
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "800 30px sans-serif";
+          ctx.fillText("Kampung Inggris Language Center", headerTextX, 88);
+
+          ctx.fillStyle = "#334155";
+          ctx.font = "400 17px sans-serif";
+          ctx.fillText("Jl. Langkat No.88, Singgahan, Pelem, Kec. Pare, Kabupaten Kediri, Jawa Timur.", headerTextX, 118);
+
+          // Garis pemisah kop
+          ctx.strokeStyle = "#0f172a";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(64, 152);
+          ctx.lineTo(W - 64, 152);
+          ctx.stroke();
+
+          // Judul & No Kwitansi
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "700 22px sans-serif";
+          ctx.fillText("KWITANSI PEMBAYARAN", 64, 198);
+
+          ctx.font = "700 18px monospace";
+          ctx.textAlign = "right";
+          ctx.fillText("No. Kwitansi: " + (item.receiptNumber || "-"), W - 64, 198);
+          ctx.textAlign = "left";
+
+          ctx.strokeStyle = "#e2e8f0";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(64, 218);
+          ctx.lineTo(W - 64, 218);
+          ctx.stroke();
+
+          // Isi Kwitansi
+          const labelX = 64;
+          const valueX = 330;
+          const maxValW = W - valueX - 64;
+
+          ctx.font = "500 17px sans-serif";
+          ctx.fillStyle = "#475569";
+          ctx.fillText("Telah terima dari", labelX, 254);
+          ctx.font = "700 18px sans-serif";
+          ctx.fillStyle = "#0f172a";
+          const payerSuffix = item.isRombongan
+            ? " (Rombongan · " + (item.jenisRombongan || "-") + ")"
+            : " (No. Reg: " + (item.nomorRegistrasi || "-") + ")";
+          ctx.fillText(item.namaSiswa + payerSuffix, valueX, 254);
+
+          // Uang Sejumlah (Terbilang box)
+          ctx.font = "500 17px sans-serif";
+          ctx.fillStyle = "#475569";
+          ctx.fillText("Uang Sejumlah", labelX, 310);
+          ctx.fillStyle = "rgba(248, 250, 252, 0.9)";
+          ctx.fillRect(valueX, 282, maxValW, 44);
+          ctx.strokeStyle = "#cbd5e1";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(valueX, 282, maxValW, 44);
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "italic 600 17px sans-serif";
+          wrapCanvasText(ctx, "# " + terbilangRupiah(item.jumlahPembayaran) + " #", valueX + 14, 310, maxValW - 28, 22);
+
+          // Untuk Pembayaran
+          ctx.font = "500 17px sans-serif";
+          ctx.fillStyle = "#475569";
+          ctx.fillText("Untuk Pembayaran", labelX, 366);
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "500 17px sans-serif";
+          const rekSuffix = item.digitRekening ? " · Rek ***" + item.digitRekening : "";
+          const payMeta = " (" + item.metodePengiriman + rekSuffix + " · Tgl Bayar " + formatShortDate(item.tanggalPembayaran) + ")";
+          wrapCanvasText(ctx, item.keterangan + payMeta, valueX, 366, maxValW, 22);
+
+          // Program
+          ctx.font = "500 17px sans-serif";
+          ctx.fillStyle = "#475569";
+          ctx.fillText("Program", labelX, 420);
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "600 17px sans-serif";
+          ctx.fillText(item.programKursus + " — Periode " + formatShortDate(item.periode), valueX, 420);
+
+          // Garis bawah isi (catatan tidak ditampilkan di kwitansi)
+          ctx.strokeStyle = "#e2e8f0";
+          ctx.beginPath();
+          ctx.moveTo(64, 472);
+          ctx.lineTo(W - 64, 472);
+          ctx.stroke();
+
+          // Kotak Nominal Angka (Kiri Bawah)
+          ctx.fillStyle = "#64748b";
+          ctx.font = "600 14px sans-serif";
+          ctx.fillText("JUMLAH PEMBAYARAN", 64, 558);
+
+          ctx.fillStyle = "rgba(248, 250, 252, 0.94)";
+          ctx.fillRect(64, 574, 360, 72);
+          ctx.strokeStyle = "#0f172a";
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(64, 574, 360, 72);
+
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "700 28px monospace";
+          ctx.fillText(formatRupiahDisplay(item.jumlahPembayaran) + ",-", 86, 620);
+
+          ctx.fillStyle = "#64748b";
+          ctx.font = "400 15px sans-serif";
+          ctx.fillText("Cabang: " + item.cabang, 64, 676);
+
+          // Tanggal Hari Ini, Paraf Kiri, Stempel Terverifikasi (1/4 masuk kolom paraf), Nama PIC (tanpa garis bawah), Jabatan
+          const sigX = W - 380;
+          const todayFormatted = formatIndonesianDate(new Date());
+          const picName = item.pic || PIC_OPTIONS[0];
+          const picPosition = getPicPosition(picName);
+
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "500 17px sans-serif";
+          ctx.fillText("Pare, " + todayFormatted, sigX, 536);
+
+          ctx.fillStyle = "#475569";
+          ctx.font = "400 15px sans-serif";
+          ctx.fillText(picPosition, sigX, 558);
+
+          // Area Paraf + Gambar Paraf di sisi kiri kolom paraf (kosong jika belum diunggah)
+          const boxX = sigX;
+          const boxY = 588;
+          const boxW = 316;
+          const boxH = 112;
+
+          const parafImg = await loadImageForCanvas(parafDataUrl);
+          if (parafImg) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(boxX, boxY, boxW, boxH);
+            ctx.clip();
+
+            const fitRatio = Math.min((boxW - 16) / parafImg.width, (boxH - 16) / parafImg.height);
+            const drawW = parafImg.width * fitRatio;
+            const drawH = parafImg.height * fitRatio;
+            const drawX = boxX;
+            const drawY = boxY + (boxH - drawH) / 2;
+            ctx.drawImage(parafImg, drawX, drawY, drawW, drawH);
+            ctx.restore();
+          }
+
+          // Stempel Digital Resmi KILC di atas kolom paraf (diameter 133.2px dengan skala 0.9; 1/4 bagiannya = 33.3px masuk ke area paraf)
+          drawCanvasDigitalStamp(ctx, boxX - 33.3, boxY + 56);
+
+          // Nama Staf TANPA garis bawah
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "700 18px sans-serif";
+          ctx.fillText(picName, sigX, 734);
+
+          return new Promise(function (resolve) {
+            canvas.toBlob(function (blob) {
+              resolve(blob);
+            }, "image/png");
+          });
+        }
+
+        function triggerBlobDownload(blob, filename) {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () {
+            URL.revokeObjectURL(url);
+          }, 2500);
+        }
+
+        // ==================== WEBSITE 1: PUBLIC FORM LOGIC ====================
+        function initPublicForm() {
+          const form = document.getElementById("payment-form");
+          const chkRombongan = document.getElementById("input-is-rombongan");
+          const wrapJenisRombongan = document.getElementById("wrapper-jenis-rombongan");
+          const selJenisRombongan = document.getElementById("input-jenis-rombongan");
+          const inputNoReg = document.getElementById("input-no-reg");
+          const badgeReqNoReg = document.getElementById("badge-req-no-reg");
+          const hintNoReg = document.getElementById("hint-no-reg");
+
+          const selMetode = document.getElementById("input-metode");
+          const inputRekening3 = document.getElementById("input-rekening-3digit");
+          const badgeReqRekening = document.getElementById("badge-req-rekening");
+          const hintRekening = document.getElementById("hint-rekening");
+
+          const inputTglBayar = document.getElementById("input-tgl-bayar");
+          const inputPeriode = document.getElementById("input-periode");
+          const inputJumlah = document.getElementById("input-jumlah");
+          const previewTerbilang = document.getElementById("preview-terbilang");
+
+          const inputBukti = document.getElementById("input-bukti");
+          const previewBox = document.getElementById("bukti-preview-box");
+          const previewImg = document.getElementById("bukti-preview-img");
+          const previewName = document.getElementById("bukti-preview-name");
+          const btnClearBukti = document.getElementById("btn-clear-bukti");
+
+          const errorBanner = document.getElementById("public-error-banner");
+          const successBanner = document.getElementById("public-success-banner");
+          const successDetail = document.getElementById("public-success-detail");
+          const btnNewSubmission = document.getElementById("btn-new-submission");
+          const headerResetBtn = document.getElementById("header-reset-btn");
+
+          function setDefaultDates() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, "0");
+            const dd = String(today.getDate()).padStart(2, "0");
+            if (!inputTglBayar.value) {
+              inputTglBayar.value = yyyy + "-" + mm + "-" + dd;
+            }
+          }
+          setDefaultDates();
+
+          function handleRombonganToggle() {
+            if (chkRombongan.checked) {
+              wrapJenisRombongan.classList.remove("hidden");
+              selJenisRombongan.required = true;
+
+              inputNoReg.value = "-";
+              inputNoReg.required = false;
+              inputNoReg.readOnly = true;
+              inputNoReg.classList.add("bg-[#f4f7f2]", "px-2.5", "text-[#1a2f23]/50");
+              badgeReqNoReg.classList.add("hidden");
+              hintNoReg.textContent = "Otomatis terisi '-' dan tidak wajib karena Tipe Rombongan dicentang.";
+            } else {
+              wrapJenisRombongan.classList.add("hidden");
+              selJenisRombongan.required = false;
+              selJenisRombongan.value = "";
+
+              if (inputNoReg.value === "-") {
+                inputNoReg.value = "";
+              }
+              inputNoReg.required = true;
+              inputNoReg.readOnly = false;
+              inputNoReg.classList.remove("bg-[#f4f7f2]", "px-2.5", "text-[#1a2f23]/50");
+              badgeReqNoReg.classList.remove("hidden");
+              hintNoReg.textContent = "Wajib diisi untuk siswa reguler.";
+            }
+          }
+
+          chkRombongan.addEventListener("change", handleRombonganToggle);
+          handleRombonganToggle();
+
+          function handleMetodeChange() {
+            const method = selMetode.value;
+            if (method === "QRIS" || method === "Tunai") {
+              inputRekening3.value = "";
+              inputRekening3.disabled = true;
+              inputRekening3.required = false;
+              badgeReqRekening.classList.add("hidden");
+              hintRekening.textContent = "Tidak diperlukan untuk metode pembayaran " + method + ".";
+            } else {
+              inputRekening3.disabled = false;
+              inputRekening3.required = method !== "";
+              badgeReqRekening.classList.remove("hidden");
+              hintRekening.textContent = "Masukkan 3 digit terakhir rekening penerima (nonaktif untuk QRIS / Tunai).";
+            }
+          }
+
+          selMetode.addEventListener("change", handleMetodeChange);
+          handleMetodeChange();
+
+          inputRekening3.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "").slice(0, 3);
+          });
+
+          inputJumlah.addEventListener("input", function () {
+            const numeric = parseRupiah(this.value);
+            this.value = numeric > 0 ? formatRupiahInput(numeric) : "";
+            if (numeric > 0) {
+              previewTerbilang.textContent = "Terbilang: " + terbilangRupiah(numeric);
+            } else {
+              previewTerbilang.textContent = "Format Rupiah otomatis saat angka diketik.";
+            }
+          });
+
+          function processImageToBase64(file) {
+            return new Promise(function (resolve, reject) {
+              const reader = new FileReader();
+              reader.onerror = function () {
+                reject(new Error("Gagal membaca file gambar."));
+              };
+              reader.onload = function (evt) {
+                const rawDataUrl = evt.target.result;
+                if (file.size <= 350 * 1024) {
+                  resolve(rawDataUrl);
+                  return;
+                }
+                const img = new Image();
+                img.onload = function () {
+                  const maxDim = 1200;
+                  let w = img.width;
+                  let h = img.height;
+                  if (w > maxDim || h > maxDim) {
+                    if (w > h) {
+                      h = Math.round((h * maxDim) / w);
+                      w = maxDim;
+                    } else {
+                      w = Math.round((w * maxDim) / h);
+                      h = maxDim;
+                    }
+                  }
+                  const canvas = document.createElement("canvas");
+                  canvas.width = w;
+                  canvas.height = h;
+                  const ctx = canvas.getContext("2d");
+                  ctx.drawImage(img, 0, 0, w, h);
+                  resolve(canvas.toDataURL("image/jpeg", 0.82));
+                };
+                img.onerror = function () {
+                  resolve(rawDataUrl);
+                };
+                img.src = rawDataUrl;
+              };
+              reader.readAsDataURL(file);
+            });
+          }
+
+          inputBukti.addEventListener("change", async function () {
+            const file = this.files && this.files[0];
+            if (!file) {
+              uploadedProofBase64 = "";
+              uploadedProofName = "";
+              previewBox.classList.add("hidden");
+              return;
+            }
+            if (!file.type.startsWith("image/")) {
+              showFormError("File bukti pembayaran harus berupa gambar (JPG, PNG, atau WEBP).");
+              this.value = "";
+              uploadedProofBase64 = "";
+              uploadedProofName = "";
+              previewBox.classList.add("hidden");
+              return;
+            }
+            try {
+              const base64 = await processImageToBase64(file);
+              uploadedProofBase64 = base64;
+              uploadedProofName = file.name;
+              previewImg.src = base64;
+              previewName.textContent = file.name;
+              previewBox.classList.remove("hidden");
+              errorBanner.classList.add("hidden");
+            } catch (err) {
+              showFormError("Tidak dapat memproses gambar bukti pembayaran.");
+            }
+          });
+
+          btnClearBukti.addEventListener("click", function () {
+            inputBukti.value = "";
+            uploadedProofBase64 = "";
+            uploadedProofName = "";
+            previewImg.src = "";
+            previewBox.classList.add("hidden");
+          });
+
+          function showFormError(message) {
+            errorBanner.textContent = message;
+            errorBanner.classList.remove("hidden");
+            errorBanner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+
+          function resetAllFormFields() {
+            form.reset();
+            uploadedProofBase64 = "";
+            uploadedProofName = "";
+            previewImg.src = "";
+            previewBox.classList.add("hidden");
+            previewTerbilang.textContent = "Format Rupiah otomatis saat angka diketik.";
+            errorBanner.classList.add("hidden");
+            setDefaultDates();
+            handleRombonganToggle();
+            handleMetodeChange();
+          }
+
+          headerResetBtn.addEventListener("click", function () {
+            resetAllFormFields();
+            successBanner.classList.add("hidden");
+          });
+
+          btnNewSubmission.addEventListener("click", function () {
+            successBanner.classList.add("hidden");
+            document.getElementById("input-cabang").focus();
+          });
+
+          form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            errorBanner.classList.add("hidden");
+
+            const cabang = document.getElementById("input-cabang").value.trim();
+            const namaSiswa = document.getElementById("input-nama").value.trim();
+            const isRombongan = chkRombongan.checked;
+            const jenisRombongan = selJenisRombongan.value.trim();
+            const nomorRegistrasi = isRombongan ? "-" : inputNoReg.value.trim();
+            const programKursus = document.getElementById("input-program").value.trim();
+            const periode = inputPeriode.value.trim();
+
+            const metodePengiriman = selMetode.value.trim();
+            const digitRekening = requiresAccountSuffix(metodePengiriman)
+              ? inputRekening3.value.trim()
+              : "";
+            const tanggalPembayaran = inputTglBayar.value.trim();
+            const jumlahPembayaran = parseRupiah(inputJumlah.value);
+            const keterangan = document.getElementById("input-keterangan").value.trim();
+            const csAdminName = document.getElementById("input-cs-admin").value.trim();
+            const whatsappRaw = document.getElementById("input-whatsapp").value.trim();
+            const whatsappNumber = normalizeWhatsappNumber(whatsappRaw);
+
+            if (!cabang) return showFormError("Silakan pilih Cabang terlebih dahulu.");
+            if (!namaSiswa) return showFormError("Nama Siswa / Instansi wajib diisi.");
+            if (isRombongan && !jenisRombongan) {
+              return showFormError("Jenis Rombongan wajib dipilih karena Tipe Rombongan dicentang.");
+            }
+            if (!isRombongan && !nomorRegistrasi) {
+              return showFormError("Nomor Registrasi Siswa wajib diisi untuk pendaftaran reguler.");
+            }
+            if (!programKursus) return showFormError("Program Kursus wajib diisi.");
+            if (!periode) return showFormError("Periode wajib dipilih melalui kalender.");
+            if (!metodePengiriman) return showFormError("Metode Pengiriman wajib dipilih.");
+            if (requiresAccountSuffix(metodePengiriman) && !/^\d{3}$/.test(digitRekening)) {
+              return showFormError("3 Digit Akhir Rekening wajib diisi tepat 3 angka untuk transfer bank.");
+            }
+            if (!tanggalPembayaran) return showFormError("Tanggal Pembayaran wajib diisi.");
+            if (jumlahPembayaran <= 0) return showFormError("Jumlah Pembayaran wajib diisi lebih dari Rp 0.");
+            if (!keterangan) return showFormError("Keterangan Pembayaran wajib diisi.");
+            if (!uploadedProofBase64) return showFormError("Bukti Pembayaran wajib diunggah.");
+            if (!csAdminName) return showFormError("Nama CS / Admin Pembayaran wajib diisi.");
+
+            const submitBtn = document.getElementById("btn-submit-form");
+            const recordId = "KLC-" + Date.now().toString(36).toUpperCase();
+            const fileMeta = splitDataUrl(uploadedProofBase64, "image/jpeg");
+
+            const submitPayload = {
+              id: recordId,
+              cabang: cabang,
+              namaSiswa: namaSiswa,
+              isRombongan: isRombongan,
+              jenisRombongan: jenisRombongan,
+              noRegistrasi: nomorRegistrasi,
+              program: programKursus,
+              periode: periode,
+              metodeBayar: metodePengiriman,
+              digitRekening: digitRekening,
+              tglBayar: tanggalPembayaran,
+              jumlahBayar: jumlahPembayaran,
+              keterangan: keterangan,
+              fileData: fileMeta.base64,
+              fileName: uploadedProofName || "bukti-pembayaran.jpg",
+              mimeType: fileMeta.mimeType,
+              pic: "",
+              csAdminName: csAdminName,
+              whatsappNumber: whatsappNumber,
+              status: "Menunggu Verifikasi",
+              createdAt: new Date().toISOString()
+            };
+
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Mengirim Data...";
+
+            try {
+              await postToAppsScript(submitPayload);
+
+              resetAllFormFields();
+
+              successDetail.textContent =
+                submitPayload.namaSiswa +
+                " (" +
+                submitPayload.cabang +
+                ") · " +
+                formatRupiahDisplay(submitPayload.jumlahBayar) +
+                " · CS: " +
+                submitPayload.csAdminName +
+                ".";
+              successBanner.classList.remove("hidden");
+              successBanner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            } catch (err) {
+              showFormError(
+                "Gagal mengirim pengajuan ke Google Sheets: " +
+                  (err && err.message ? err.message : "Periksa koneksi internet dan coba lagi.")
+              );
+            } finally {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+            }
+          });
+        }
+
+        // ==================== WEBSITE 2: ADMIN PORTAL (?mode=admin) ====================
+        function showAdminBanner(text) {
+          const banner = document.getElementById("admin-action-banner");
+          const msgEl = document.getElementById("admin-action-banner-text");
+          msgEl.textContent = text;
+          banner.classList.remove("hidden");
+        }
+
+        function isAdminUnlocked() {
+          return sessionStorage.getItem(SESSION_KEY_ADMIN) === "true";
+        }
+
+        function renderAdminGateOrDashboard() {
+          const pinGate = document.getElementById("admin-pin-gate");
+          const dashboard = document.getElementById("admin-dashboard");
+          const lockBtn = document.getElementById("btn-admin-lock");
+          if (isAdminUnlocked()) {
+            pinGate.classList.add("hidden");
+            dashboard.classList.remove("hidden");
+            lockBtn.classList.remove("hidden");
+            renderAdminDashboard();
+          } else {
+            dashboard.classList.add("hidden");
+            lockBtn.classList.add("hidden");
+            pinGate.classList.remove("hidden");
+          }
+        }
+
+        function renderAdminDashboard() {
+          const allRecords = getRecords();
+
+          const branchScoped =
+            currentBranchFilter === "Semua Cabang"
+              ? allRecords
+              : allRecords.filter(function (r) {
+                  return r.cabang === currentBranchFilter;
+                });
+
+          const totalCount = branchScoped.length;
+          const totalAmount = branchScoped.reduce(function (sum, item) {
+            return sum + parseRupiah(item.jumlahPembayaran);
+          }, 0);
+          const pendingCount = branchScoped.filter(function (item) {
+            return item.status === "Menunggu Verifikasi";
+          }).length;
+
+          document.getElementById("stat-total-count").textContent = String(totalCount);
+          document.getElementById("stat-total-amount").textContent = formatRupiahDisplay(totalAmount);
+          document.getElementById("stat-pending-count").textContent = String(pendingCount);
+          document.getElementById("stat-branch-caption-1").textContent =
+            currentBranchFilter === "Semua Cabang" ? "Seluruh cabang aktif" : "Cabang: " + currentBranchFilter;
+          document.getElementById("stat-branch-caption-2").textContent =
+            currentBranchFilter === "Semua Cabang" ? "Akumulasi resume aktif" : "Nominal cabang " + currentBranchFilter;
+
+          document.querySelectorAll(".filter-tab").forEach(function (tab) {
+            const tabStatus = tab.getAttribute("data-filter-status");
+            if (tabStatus === currentStatusFilter) {
+              tab.classList.add("bg-white", "text-[#1a2f23]", "shadow-xs");
+              tab.classList.remove("text-[#718355]", "hover:text-[#1a2f23]");
+              tab.setAttribute("aria-selected", "true");
+            } else {
+              tab.classList.remove("bg-white", "text-[#1a2f23]", "shadow-xs");
+              tab.classList.add("text-[#718355]", "hover:text-[#1a2f23]");
+              tab.setAttribute("aria-selected", "false");
+            }
+          });
+
+          const q = currentSearch.trim().toLowerCase();
+          const filtered = branchScoped.filter(function (item) {
+            const matchStatus = currentStatusFilter === "Semua" || item.status === currentStatusFilter;
+            if (!matchStatus) return false;
+            if (!q) return true;
+              const hay = [
+                item.namaSiswa,
+                item.cabang,
+                item.programKursus,
+                item.receiptNumber,
+                item.nomorRegistrasi,
+                item.csAdminName,
+                item.pic,
+                item.catatan
+              ]
+                .join(" ")
+                .toLowerCase();
+              return hay.includes(q);
+          });
+
+          const tbody = document.getElementById("admin-table-body");
+          const emptyState = document.getElementById("admin-empty-state");
+          tbody.innerHTML = "";
+
+          if (isAdminLoading && allRecords.length === 0) {
+            emptyState.classList.add("hidden");
+            const loadingTr = document.createElement("tr");
+            loadingTr.innerHTML =
+              '<td colspan="8" class="py-12 px-4 text-center font-mono text-xs uppercase tracking-[0.08em] text-[#718355]">Mengambil data pengajuan dari Google Sheets...</td>';
+            tbody.appendChild(loadingTr);
+            return;
+          }
+
+          if (filtered.length === 0) {
+            emptyState.classList.remove("hidden");
+            return;
+          }
+          emptyState.classList.add("hidden");
+
+          filtered.forEach(function (item) {
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-[#f4faee]/60 transition-colors align-top";
+
+            const isIssued = item.status === "Kwitansi Terbit";
+
+            const tdDate = document.createElement("td");
+            tdDate.className = "py-3.5 px-2.5 whitespace-nowrap";
+            const receiptText = item.receiptNumber
+              ? '<div class="mt-1 font-mono text-[11px] font-bold text-[#2d6a4f] tabular-nums">' + escapeXml(item.receiptNumber) + "</div>"
+              : '<div class="mt-1 text-xs text-[#1a2f23]/40">Belum terbit</div>';
+            tdDate.innerHTML =
+              '<div class="font-mono text-xs font-medium text-[#1a2f23] tabular-nums">' +
+              escapeXml(formatShortDate(item.tanggalPembayaran)) +
+              "</div>" +
+              receiptText;
+
+            const tdStudent = document.createElement("td");
+            tdStudent.className = "py-3.5 px-2.5 max-w-[180px]";
+            const rombonganInfo = item.isRombongan
+              ? "Rombongan (" + escapeXml(item.jenisRombongan || "-") + ")"
+              : "Reg: " + escapeXml(item.nomorRegistrasi || "-");
+            tdStudent.innerHTML =
+              '<div class="font-semibold text-[#1a2f23] leading-snug">' + escapeXml(item.namaSiswa) + "</div>" +
+              '<div class="text-xs text-[#718355] mt-0.5 leading-snug">' +
+              escapeXml(item.cabang) +
+              ' <span aria-hidden="true">·</span> ' +
+              rombonganInfo +
+              "</div>";
+
+            const tdProgram = document.createElement("td");
+            tdProgram.className = "py-3.5 px-2.5 max-w-[190px]";
+            tdProgram.innerHTML =
+              '<div class="text-[#1a2f23] font-medium leading-snug">' + escapeXml(item.programKursus) + "</div>" +
+              '<div class="text-xs text-[#718355] mt-0.5 leading-snug">Periode: ' +
+              escapeXml(formatShortDate(item.periode)) +
+              ' <span aria-hidden="true">·</span> ' +
+              escapeXml(item.keterangan) +
+              "</div>";
+
+            const tdAmount = document.createElement("td");
+            tdAmount.className = "py-3.5 px-2.5 text-right whitespace-nowrap";
+            const rekInfo = item.digitRekening ? " (***" + escapeXml(item.digitRekening) + ")" : "";
+            tdAmount.innerHTML =
+              '<div class="font-mono text-xs sm:text-sm font-bold text-[#1a2f23] tabular-nums">' +
+              escapeXml(formatRupiahDisplay(item.jumlahPembayaran)) +
+              "</div>" +
+              '<div class="text-xs text-[#718355] mt-0.5">' +
+              escapeXml(item.metodePengiriman) +
+              rekInfo +
+              "</div>";
+
+            const tdPic = document.createElement("td");
+            tdPic.className = "py-3.5 px-2.5 min-w-[155px]";
+            const csDiv = document.createElement("div");
+            csDiv.className = "text-xs font-medium text-[#718355] mb-1.5";
+            csDiv.textContent = "CS: " + (item.csAdminName || "-");
+            tdPic.appendChild(csDiv);
+
+            const picSelect = document.createElement("select");
+            picSelect.setAttribute("aria-label", "Pilih PIC finance " + item.namaSiswa);
+            picSelect.className =
+              "w-full h-8 px-2 text-xs bg-white border border-[#1a2f23]/20 rounded-[2px] text-[#1a2f23]";
+            const defaultOpt = document.createElement("option");
+            defaultOpt.value = "";
+            defaultOpt.textContent = "-- Pilih PIC Finance --";
+            picSelect.appendChild(defaultOpt);
+            PIC_OPTIONS.forEach(function (staffName) {
+              const opt = document.createElement("option");
+              opt.value = staffName;
+              opt.textContent = staffName;
+              if (item.pic === staffName) opt.selected = true;
+              picSelect.appendChild(opt);
+            });
+            picSelect.addEventListener("change", function () {
+              updateSubmissionPic(item.id, this.value);
+            });
+            tdPic.appendChild(picSelect);
+
+            const tdCatatan = document.createElement("td");
+            tdCatatan.className = "py-3.5 px-2.5 min-w-[175px]";
+            const catatanInput = document.createElement("textarea");
+            catatanInput.rows = 3;
+            catatanInput.value = item.catatan || "";
+            catatanInput.placeholder = "Catatan opsional...";
+            catatanInput.setAttribute("aria-label", "Catatan staf untuk " + item.namaSiswa);
+            catatanInput.className =
+              "w-full px-2 py-1.5 text-xs bg-white border border-[#1a2f23]/20 rounded-[2px] text-[#1a2f23] placeholder:text-[#1a2f23]/35 resize-y leading-snug";
+            catatanInput.addEventListener("input", function () {
+              updateSubmissionCatatanLocal(item.id, this.value);
+            });
+            catatanInput.addEventListener("change", function () {
+              updateSubmissionCatatanSync(item.id, this.value);
+            });
+            tdCatatan.appendChild(catatanInput);
+
+            const tdProof = document.createElement("td");
+            tdProof.className = "py-3.5 px-2.5 text-center whitespace-nowrap";
+            const btnProof = document.createElement("button");
+            btnProof.type = "button";
+            btnProof.className =
+              "px-2.5 py-1.5 text-xs font-medium text-[#1a2f23] bg-[#f4faee] hover:bg-[#e9f5db] border border-[#1a2f23]/15 rounded-[2px] transition-colors whitespace-nowrap";
+            btnProof.textContent = "Lihat Bukti";
+            btnProof.setAttribute("aria-label", "Lihat bukti pembayaran " + item.namaSiswa);
+            btnProof.addEventListener("click", function () {
+              openProofModal(item);
+            });
+            tdProof.appendChild(btnProof);
+
+            const tdActions = document.createElement("td");
+            tdActions.className = "py-3.5 px-2.5 whitespace-nowrap";
+            const actionWrap = document.createElement("div");
+            actionWrap.className = "flex flex-col items-stretch gap-1.5 min-w-[152px]";
+
+            const selectStatus = document.createElement("select");
+            selectStatus.setAttribute("aria-label", "Ubah status " + item.namaSiswa);
+            selectStatus.className =
+              "h-9 px-2.5 text-xs font-semibold rounded-[2px] border transition-colors " +
+              (isIssued
+                ? "bg-[#f4f7f2] border-[#1a2f23]/15 text-[#1a2f23]/55 cursor-not-allowed"
+                : item.status === "Verifikasi Finance"
+                ? "bg-[#e9f5db] border-[#2d6a4f]/25 text-[#1a2f23]"
+                : "bg-amber-50 border-amber-200 text-amber-800");
+
+            ["Menunggu Verifikasi", "Verifikasi Finance", "Kwitansi Terbit", "Ditolak"].forEach(function (st) {
+              const opt = document.createElement("option");
+              opt.value = st;
+              opt.textContent = st;
+              if (item.status === st) opt.selected = true;
+              selectStatus.appendChild(opt);
+            });
+
+            if (isIssued) {
+              selectStatus.disabled = true;
+            }
+
+            selectStatus.addEventListener("change", async function () {
+              this.disabled = true;
+              await updateSubmissionStatus(item.id, this.value);
+            });
+
+            actionWrap.appendChild(selectStatus);
+
+            if (isIssued) {
+              const btnPrint = document.createElement("button");
+              btnPrint.type = "button";
+              btnPrint.className =
+                "h-9 px-3 text-xs font-semibold text-white bg-[#2d6a4f] hover:bg-[#1a2f23] rounded-[2px] transition-colors whitespace-nowrap shrink-0";
+              btnPrint.textContent = "Cetak Kwitansi";
+              btnPrint.setAttribute("aria-label", "Cetak kwitansi " + item.namaSiswa);
+              btnPrint.addEventListener("click", function () {
+                openReceiptModal(item);
+              });
+              actionWrap.appendChild(btnPrint);
+            }
+
+            tdActions.appendChild(actionWrap);
+
+            tr.appendChild(tdDate);
+            tr.appendChild(tdStudent);
+            tr.appendChild(tdProgram);
+            tr.appendChild(tdAmount);
+            tr.appendChild(tdPic);
+            tr.appendChild(tdCatatan);
+            tr.appendChild(tdProof);
+            tr.appendChild(tdActions);
+
+            tbody.appendChild(tr);
+          });
+        }
+
+        function updateSubmissionCatatanLocal(id, catatanVal) {
+          const idx = adminRecords.findIndex(function (r) {
+            return r.id === id;
+          });
+          if (idx === -1) return;
+          adminRecords[idx].catatan = catatanVal;
+        }
+
+        async function updateSubmissionCatatanSync(id, catatanVal) {
+          updateSubmissionCatatanLocal(id, catatanVal);
+          const item = adminRecords.find(function (r) {
+            return r.id === id;
+          });
+          if (!item) return;
+          try {
+            await postToAppsScript({
+              action: "updateCatatan",
+              id: item.id,
+              catatan: catatanVal
+            });
+          } catch (err) {
+            console.warn("Gagal menyimpan catatan ke Apps Script:", err);
+          }
+        }
+
+        async function updateSubmissionPic(id, picName) {
+          const idx = adminRecords.findIndex(function (r) {
+            return r.id === id;
+          });
+          if (idx === -1) return;
+          adminRecords[idx].pic = picName;
+          try {
+            await postToAppsScript({
+              action: "updatePic",
+              id: adminRecords[idx].id,
+              pic: picName
+            });
+          } catch (err) {
+            console.warn("Gagal menyimpan PIC ke Apps Script:", err);
+          }
+        }
+
+        async function updateSubmissionStatus(id, newStatus) {
+          const idx = adminRecords.findIndex(function (r) {
+            return r.id === id;
+          });
+          if (idx === -1) return;
+
+          const target = adminRecords[idx];
+          if (target.status === "Kwitansi Terbit") {
+            return;
+          }
+
+          let nextReceiptNo = target.receiptNumber || "";
+          if (newStatus === "Kwitansi Terbit" && !nextReceiptNo) {
+            const seq = computeNextReceiptSequence(adminRecords);
+            nextReceiptNo = generateReceiptNumber(
+              target.cabang,
+              target.isRombongan,
+              seq,
+              new Date()
+            );
+          }
+
+          const statusPayload = {
+            action: "updateStatus",
+            id: target.id,
+            newStatus: newStatus,
+            noKwitansi: newStatus === "Kwitansi Terbit" ? nextReceiptNo : (target.receiptNumber || "")
+          };
+
+          try {
+            await postToAppsScript(statusPayload);
+          } catch (err) {
+            showAdminBanner(
+              "Gagal memperbarui status " +
+                target.namaSiswa +
+                " ke Google Sheets: " +
+                (err && err.message ? err.message : "Periksa koneksi internet Anda.")
+            );
+            renderAdminDashboard();
+            return;
+          }
+
+          if (newStatus === "Ditolak") {
+            adminRecords = adminRecords.filter(function (r) {
+              return r.id !== id;
+            });
+            renderAdminDashboard();
+            showAdminBanner(
+              "Pengajuan atas nama " +
+                target.namaSiswa +
+                " berstatus Ditolak. Data di resume portal telah dihapus otomatis, sedangkan riwayat tetap tersimpan di Google Sheets."
+            );
+            return;
+          }
+
+          target.status = newStatus;
+          if (newStatus === "Kwitansi Terbit") {
+            target.receiptNumber = nextReceiptNo;
+            if (!target.pic) {
+              target.pic = PIC_OPTIONS[0];
+            }
+            target.issuedAt = new Date().toISOString();
+          }
+
+          adminRecords[idx] = target;
+          renderAdminDashboard();
+        }
+
+        function initAdminPortal() {
+          const pinForm = document.getElementById("admin-pin-form");
+          const pinInput = document.getElementById("input-admin-pin");
+          const pinError = document.getElementById("admin-pin-error");
+          const btnLock = document.getElementById("btn-admin-lock");
+          const btnRefresh = document.getElementById("btn-admin-refresh");
+          const branchFilter = document.getElementById("admin-branch-filter");
+          const searchInput = document.getElementById("admin-search");
+          const btnResetFilter = document.getElementById("btn-reset-filter");
+          const btnCloseBanner = document.getElementById("btn-close-action-banner");
+
+          pinForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (pinInput.value.trim() === ADMIN_PIN) {
+              sessionStorage.setItem(SESSION_KEY_ADMIN, "true");
+              pinError.classList.add("hidden");
+              pinInput.value = "";
+              renderAdminGateOrDashboard();
+              fetchRecordsFromAppsScript();
+            } else {
+              pinError.classList.remove("hidden");
+              pinInput.focus();
+              pinInput.select();
+            }
+          });
+
+          if (btnRefresh) {
+            btnRefresh.addEventListener("click", function () {
+              fetchRecordsFromAppsScript({ notifyOnSuccess: true });
+            });
+          }
+
+          btnLock.addEventListener("click", function () {
+            sessionStorage.removeItem(SESSION_KEY_ADMIN);
+            renderAdminGateOrDashboard();
+          });
+
+          branchFilter.addEventListener("change", function () {
+            currentBranchFilter = this.value || "Semua Cabang";
+            renderAdminDashboard();
+          });
+
+          document.querySelectorAll(".filter-tab").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              currentStatusFilter = this.getAttribute("data-filter-status") || "Semua";
+              renderAdminDashboard();
+            });
+          });
+
+          searchInput.addEventListener("input", function () {
+            currentSearch = this.value;
+            renderAdminDashboard();
+          });
+
+          btnResetFilter.addEventListener("click", function () {
+            currentBranchFilter = "Semua Cabang";
+            currentStatusFilter = "Semua";
+            currentSearch = "";
+            branchFilter.value = "Semua Cabang";
+            searchInput.value = "";
+            renderAdminDashboard();
+          });
+
+          btnCloseBanner.addEventListener("click", function () {
+            document.getElementById("admin-action-banner").classList.add("hidden");
+          });
+        }
+
+        // ==================== MODALS: PROOF & RECEIPT (PARAF SHAPE + WHATSAPP AUTO RECEIPT) ====================
+        function openProofModal(item) {
+          const modal = document.getElementById("proof-modal");
+          const imgEl = document.getElementById("proof-modal-img");
+          const extLink = document.getElementById("proof-modal-external-link");
+          document.getElementById("proof-modal-title").textContent = "Bukti Pembayaran · " + item.namaSiswa;
+          document.getElementById("proof-modal-subtitle").textContent =
+            item.cabang + " · " + formatRupiahDisplay(item.jumlahPembayaran) + " · " + item.metodePengiriman;
+          imgEl.src = item.buktiBase64 || "";
+          if (item.buktiExternalUrl) {
+            extLink.href = item.buktiExternalUrl;
+            extLink.classList.remove("hidden");
+          } else {
+            extLink.href = "#";
+            extLink.classList.add("hidden");
+          }
+          modal.classList.remove("hidden");
+        }
+
+        function refreshReceiptSignatureView(parafDataUrl) {
+          const img = document.getElementById("rcp-paraf-img");
+          const clearBtn = document.getElementById("rcp-clear-paraf");
+
+          currentParafDataUrl = parafDataUrl || "";
+
+          if (currentParafDataUrl) {
+            img.src = currentParafDataUrl;
+            img.classList.remove("hidden");
+            clearBtn.classList.remove("hidden");
+          } else {
+            img.src = "";
+            img.classList.add("hidden");
+            clearBtn.classList.add("hidden");
+          }
+        }
+
+        function syncWhatsappHrefAndUi() {
+          const freeCheckbox = document.getElementById("rcp-wa-free-mode");
+          const phoneInput = document.getElementById("rcp-wa-phone");
+          const msgTextarea = document.getElementById("rcp-wa-message");
+          const waLink = document.getElementById("rcp-wa-link");
+
+          const isFree = freeCheckbox.checked;
+          phoneInput.disabled = isFree;
+          const targetPhone = isFree ? "" : phoneInput.value;
+          waLink.href = buildWhatsappUrl(targetPhone, msgTextarea.value);
+        }
+
+        function refreshWhatsappControls(item) {
+          const freeCheckbox = document.getElementById("rcp-wa-free-mode");
+          const phoneInput = document.getElementById("rcp-wa-phone");
+          const useFormBtn = document.getElementById("rcp-wa-use-form-num");
+          const msgTextarea = document.getElementById("rcp-wa-message");
+          const waStatus = document.getElementById("rcp-wa-status");
+
+          waStatus.classList.add("hidden");
+
+          // Default: bebas kirim ke siapapun saat buka WhatsApp
+          freeCheckbox.checked = true;
+          phoneInput.value = "";
+          phoneInput.disabled = true;
+
+          if (item.whatsappNumber) {
+            useFormBtn.textContent = "Gunakan No. Form (" + item.whatsappNumber + ")";
+            useFormBtn.classList.remove("hidden");
+            useFormBtn.onclick = function () {
+              freeCheckbox.checked = false;
+              phoneInput.disabled = false;
+              phoneInput.value = item.whatsappNumber;
+              syncWhatsappHrefAndUi();
+            };
+          } else {
+            useFormBtn.classList.add("hidden");
+          }
+
+          fillTodayReceiptDate();
+          msgTextarea.value = buildWhatsappReceiptMessage(item);
+          syncWhatsappHrefAndUi();
+        }
+
+        function applyReceiptPicAndSync(item, selectedPic) {
+          const idx = adminRecords.findIndex(function (r) {
+            return r.id === item.id;
+          });
+
+          const effectivePic = selectedPic || PIC_OPTIONS[0];
+          item.pic = effectivePic;
+
+          const sigMap = getSignatureMap();
+          const activeParaf = item.parafBase64 || sigMap[effectivePic] || "";
+
+          if (idx !== -1) {
+            adminRecords[idx].pic = effectivePic;
+            renderAdminDashboard();
+          }
+
+          document.getElementById("rcp-pic-name").textContent = effectivePic;
+          document.getElementById("rcp-pic-position").textContent = getPicPosition(effectivePic);
+          refreshReceiptSignatureView(activeParaf);
+          refreshWhatsappControls(item);
+        }
+
+        function openReceiptModal(item) {
+          activeReceiptId = item.id;
+
+          const selectPic = document.getElementById("rcp-select-pic");
+          const chosenPic = item.pic && PIC_OPTIONS.includes(item.pic) ? item.pic : PIC_OPTIONS[0];
+          selectPic.value = chosenPic;
+
+          document.getElementById("rcp-number").textContent = item.receiptNumber || "-";
+          document.getElementById("rcp-payer").textContent = item.namaSiswa;
+          document.getElementById("rcp-payer-meta").textContent = item.isRombongan
+            ? "(Rombongan · " + (item.jenisRombongan || "-") + ")"
+            : "(No. Reg: " + (item.nomorRegistrasi || "-") + ")";
+
+          document.getElementById("rcp-terbilang").textContent =
+            "# " + terbilangRupiah(item.jumlahPembayaran) + " #";
+
+          document.getElementById("rcp-keterangan").textContent = item.keterangan;
+          const rekSuffix = item.digitRekening ? " · Rek ***" + item.digitRekening : "";
+          document.getElementById("rcp-payment-meta").textContent =
+            "(" + item.metodePengiriman + rekSuffix + " · Tgl Bayar " + formatShortDate(item.tanggalPembayaran) + ")";
+
+          document.getElementById("rcp-program").textContent =
+            item.programKursus + " — Periode " + formatShortDate(item.periode);
+
+          document.getElementById("rcp-amount").textContent =
+            formatRupiahDisplay(item.jumlahPembayaran) + ",-";
+
+          document.getElementById("rcp-branch-date").textContent = "Cabang: " + item.cabang;
+
+          document.getElementById("rcp-upload-paraf").value = "";
+
+          applyReceiptPicAndSync(item, chosenPic);
+          document.getElementById("receipt-modal").classList.remove("hidden");
+        }
+
+        function initModals() {
+          const proofModal = document.getElementById("proof-modal");
+          const receiptModal = document.getElementById("receipt-modal");
+          const selectPic = document.getElementById("rcp-select-pic");
+          const uploadParaf = document.getElementById("rcp-upload-paraf");
+          const clearParafBtn = document.getElementById("rcp-clear-paraf");
+
+          const waFreeCheckbox = document.getElementById("rcp-wa-free-mode");
+          const waPhoneInput = document.getElementById("rcp-wa-phone");
+          const waMsgTextarea = document.getElementById("rcp-wa-message");
+          const waLink = document.getElementById("rcp-wa-link");
+          const waCopyBtn = document.getElementById("rcp-wa-copy");
+          const waStatus = document.getElementById("rcp-wa-status");
+          const copyImgBtn = document.getElementById("btn-copy-receipt-img");
+          const downloadPngBtn = document.getElementById("btn-download-receipt-png");
+
+          async function copyReceiptImageToClipboard(item) {
+            if (!navigator.clipboard || !window.ClipboardItem) {
+              return false;
+            }
+            try {
+              const blobPromise = renderReceiptCanvasBlob(item, currentParafDataUrl).then(function (blob) {
+                if (!blob) throw new Error("Gagal merender gambar kwitansi.");
+                return blob;
+              });
+              await navigator.clipboard.write([new ClipboardItem({ "image/png": blobPromise })]);
+              return true;
+            } catch (err1) {
+              try {
+                const blob = await renderReceiptCanvasBlob(item, currentParafDataUrl);
+                if (!blob) return false;
+                await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+                return true;
+              } catch (err2) {
+                return false;
+              }
+            }
+          }
+
+          document.getElementById("btn-close-proof-modal").addEventListener("click", function () {
+            proofModal.classList.add("hidden");
+          });
+          proofModal.addEventListener("click", function (e) {
+            if (e.target === proofModal) proofModal.classList.add("hidden");
+          });
+
+          document.getElementById("btn-close-receipt-modal").addEventListener("click", function () {
+            receiptModal.classList.add("hidden");
+          });
+          receiptModal.addEventListener("click", function (e) {
+            if (e.target === receiptModal) receiptModal.classList.add("hidden");
+          });
+
+          selectPic.addEventListener("change", function () {
+            if (!activeReceiptId) return;
+            const records = getRecords();
+            const item = records.find(function (r) {
+              return r.id === activeReceiptId;
+            });
+            if (!item) return;
+            applyReceiptPicAndSync(item, this.value);
+            updateSubmissionPic(item.id, this.value);
+          });
+
+          uploadParaf.addEventListener("change", function () {
+            const file = this.files && this.files[0];
+            if (!file || !file.type.startsWith("image/")) return;
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+              const dataUrl = evt.target.result;
+              const idx = adminRecords.findIndex(function (r) {
+                return r.id === activeReceiptId;
+              });
+              if (idx !== -1) {
+                adminRecords[idx].parafBase64 = dataUrl;
+                saveSignatureForPic(adminRecords[idx].pic || selectPic.value, dataUrl);
+              }
+              refreshReceiptSignatureView(dataUrl);
+            };
+            reader.readAsDataURL(file);
+          });
+
+          clearParafBtn.addEventListener("click", function () {
+            uploadParaf.value = "";
+            const idx = adminRecords.findIndex(function (r) {
+              return r.id === activeReceiptId;
+            });
+            if (idx !== -1) {
+              adminRecords[idx].parafBase64 = "";
+              saveSignatureForPic(adminRecords[idx].pic || selectPic.value, "");
+            }
+            refreshReceiptSignatureView("");
+          });
+
+          waFreeCheckbox.addEventListener("change", function () {
+            if (this.checked) {
+              waPhoneInput.value = "";
+            }
+            syncWhatsappHrefAndUi();
+          });
+
+          waPhoneInput.addEventListener("input", syncWhatsappHrefAndUi);
+          waMsgTextarea.addEventListener("input", syncWhatsappHrefAndUi);
+
+          waCopyBtn.addEventListener("click", async function () {
+            try {
+              await navigator.clipboard.writeText(waMsgTextarea.value);
+              waCopyBtn.textContent = "Tersalin!";
+              setTimeout(function () {
+                waCopyBtn.textContent = "Salin Pesan";
+              }, 1500);
+            } catch (err) {
+              waMsgTextarea.select();
+            }
+          });
+
+          copyImgBtn.addEventListener("click", async function () {
+            if (!activeReceiptId) return;
+            const item = getRecords().find(function (r) {
+              return r.id === activeReceiptId;
+            });
+            if (!item) return;
+
+            const copied = await copyReceiptImageToClipboard(item);
+            if (copied) {
+              copyImgBtn.textContent = "Gambar Tersalin!";
+              waStatus.textContent = "Gambar kwitansi berhasil disalin ke clipboard (tinggal Ctrl+V di chat WhatsApp).";
+              waStatus.classList.remove("hidden");
+              setTimeout(function () {
+                copyImgBtn.textContent = "Salin Gambar Kwitansi";
+              }, 1800);
+            } else {
+              waStatus.textContent = "Browser ini tidak mendukung salin gambar otomatis ke clipboard. Gunakan tombol Unduh Gambar Kwitansi.";
+              waStatus.classList.remove("hidden");
+            }
+          });
+
+          downloadPngBtn.addEventListener("click", async function () {
+            if (!activeReceiptId) return;
+            const item = getRecords().find(function (r) {
+              return r.id === activeReceiptId;
+            });
+            if (!item) return;
+            const blob = await renderReceiptCanvasBlob(item, currentParafDataUrl);
+            const safeNo = (item.receiptNumber || item.id).replace(/[^A-Za-z0-9-_]/g, "-");
+            triggerBlobDownload(blob, "Kwitansi-" + safeNo + ".png");
+          });
+
+          // Klik Kirim via WhatsApp: salin gambar kwitansi ke clipboard TANPA mengunduh file otomatis
+          waLink.addEventListener("click", async function () {
+            if (!activeReceiptId) return;
+            const item = getRecords().find(function (r) {
+              return r.id === activeReceiptId;
+            });
+            if (!item) return;
+
+            syncWhatsappHrefAndUi();
+            const copiedImage = await copyReceiptImageToClipboard(item);
+
+            waStatus.textContent = copiedImage
+              ? "Gambar kwitansi disalin ke clipboard (tinggal tempel / Ctrl+V di chat WhatsApp, tanpa unduh otomatis)."
+              : "WhatsApp dibuka dengan pesan kwitansi. Gunakan tombol Salin Gambar atau Unduh Gambar jika perlu melampirkan manual.";
+            waStatus.classList.remove("hidden");
+          });
+
+          document.getElementById("btn-print-receipt").addEventListener("click", function () {
+            fillTodayReceiptDate();
+            window.print();
+          });
+
+          document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+              proofModal.classList.add("hidden");
+              receiptModal.classList.add("hidden");
+            }
+          });
+        }
+
+        // ==================== BOOTSTRAP ====================
+        document.addEventListener("DOMContentLoaded", function () {
+          const sitePublic = document.getElementById("site-public");
+          const siteAdmin = document.getElementById("site-admin");
+
+          if (isAdminModeUrl()) {
+            document.title = "Portal Administrator Kwitansi KILC";
+            sitePublic.classList.add("hidden");
+            siteAdmin.classList.remove("hidden");
+            initAdminPortal();
+            initModals();
+            renderAdminGateOrDashboard();
+            fetchRecordsFromAppsScript();
+          } else {
+            document.title = "Formulir Konfirmasi Pembayaran KILC";
+            siteAdmin.classList.add("hidden");
+            sitePublic.classList.remove("hidden");
+            initPublicForm();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

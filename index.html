@@ -172,23 +172,29 @@
     <div id="site-public" class="hidden min-h-screen flex flex-col">
       <!-- Header Khusus Formulir Pembayaran (Tanpa tautan ke Portal Admin) -->
       <header class="sticky top-0 z-30 bg-[#fdfefc]/85 backdrop-blur-md border-b border-[#1a2f23]/10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-8">
           <a
             href="#top-public"
-            class="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-[0.12em] text-[#1a2f23] whitespace-nowrap shrink-0"
+            class="inline-flex items-center gap-1.5 sm:gap-3 font-mono text-[9px] sm:text-xs font-bold uppercase tracking-[0.01em] sm:tracking-[0.12em] text-[#1a2f23] whitespace-nowrap min-w-0 shrink"
           >
-            PORTAL KWITANSI PEMBAYARAN
+            <img
+              src="/assets/aistudio/logo_internal_32667169.png"
+              alt="Logo LC Language Center"
+              class="h-6 sm:h-9 w-auto object-contain shrink-0"
+              onerror="this.style.display='none'"
+            />
+            <span class="truncate">PORTAL KWITANSI PEMBAYARAN</span>
           </a>
 
           <nav aria-label="Bagian formulir" class="hidden md:flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.12em] text-[#1a2f23]/70">
             <a href="#section-identitas" class="hover:text-[#2d6a4f] transition-colors whitespace-nowrap shrink-0">
-              01. Identitas
+              Identitas
             </a>
             <a href="#section-pembayaran" class="hover:text-[#2d6a4f] transition-colors whitespace-nowrap shrink-0">
-              02. Pembayaran
+              Pembayaran
             </a>
             <a href="#section-bukti" class="hover:text-[#2d6a4f] transition-colors whitespace-nowrap shrink-0">
-              03. Bukti &amp; CS
+              Bukti &amp; PIC
             </a>
           </nav>
 
@@ -196,7 +202,7 @@
             <button
               type="button"
               id="header-reset-btn"
-              class="px-3 sm:px-4 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[#1a2f23] bg-white/80 hover:bg-[#e9f5db] border border-[#1a2f23]/15 rounded-[2px] transition-colors whitespace-nowrap shrink-0"
+              class="px-2 sm:px-4 py-1.5 sm:py-2 font-mono text-[9px] sm:text-[11px] font-semibold uppercase tracking-[0.03em] sm:tracking-[0.1em] text-[#1a2f23] bg-white/80 hover:bg-[#e9f5db] border border-[#1a2f23]/15 rounded-[2px] transition-colors whitespace-nowrap shrink-0"
             >
               Reset Formulir
             </button>
@@ -206,25 +212,17 @@
 
       <main id="top-public" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div class="w-full">
-          <!-- Page Title & Logo -->
-          <div class="mb-10 flex flex-col sm:flex-row sm:items-center gap-5">
-            <img
-              src="/assets/aistudio/logo_internal_32667169.png"
-              alt="Logo LC Language Center"
-              class="h-14 w-auto object-contain self-start shrink-0"
-              onerror="this.style.display='none'"
-            />
-            <div>
-              <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f] mb-2">
-                Kampung Inggris Language Center
-              </p>
-              <h1 class="font-display text-3xl sm:text-5xl font-bold text-[#1a2f23] leading-[1.02] tracking-[-0.02em]" style="text-wrap: balance;">
-                Formulir Konfirmasi Pembayaran &amp; Pengajuan Kwitansi
-              </h1>
-              <p class="mt-3 text-sm sm:text-base text-[#1a2f23]/70 max-w-2xl leading-relaxed">
-                Lengkapi data identitas siswa atau instansi, rincian transaksi pembayaran, serta unggah bukti transfer untuk diteruskan ke bagian Finance KILC.
-              </p>
-            </div>
+          <!-- Page Title -->
+          <div class="mb-10">
+            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f] mb-2">
+              Kampung Inggris Language Center
+            </p>
+            <h1 class="font-display text-3xl sm:text-5xl font-bold text-[#1a2f23] leading-[1.02] tracking-[-0.02em]" style="text-wrap: balance;">
+              Formulir Konfirmasi Pembayaran &amp; Pengajuan Kwitansi
+            </h1>
+            <p class="mt-3 text-sm sm:text-base text-[#1a2f23]/70 max-w-2xl leading-relaxed">
+              Lengkapi data identitas siswa atau instansi, rincian transaksi pembayaran, serta unggah bukti transfer untuk diteruskan ke bagian Finance KILC.
+            </p>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
@@ -255,6 +253,47 @@
                 Buat Pengajuan Baru
               </button>
             </div>
+
+            <!-- Pesan Otomatis Konfirmasi ke Finance (Pusat / Cabang) -->
+            <div class="mt-5 pt-4 border-t border-[#2d6a4f]/20 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <label for="public-confirm-wa-msg" class="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1a2f23]">
+                  Pesan Otomatis Konfirmasi ke Finance (WhatsApp)
+                </label>
+                <button
+                  type="button"
+                  id="btn-copy-confirm-msg"
+                  class="px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1a2f23] bg-white hover:bg-[#f4faee] border border-[#2d6a4f]/25 rounded-[2px] transition-colors"
+                >
+                  Salin Pesan
+                </button>
+              </div>
+              <textarea
+                id="public-confirm-wa-msg"
+                rows="4"
+                class="w-full px-3 py-2 text-xs bg-white/95 border border-[#2d6a4f]/25 rounded-[2px] text-[#1a2f23] leading-relaxed"
+              ></textarea>
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2.5">
+                <a
+                  id="btn-wa-finance-pusat"
+                  href="https://wa.me/6282335511494"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center justify-center px-4 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-[#2d6a4f] hover:bg-[#1a2f23] rounded-[2px] transition-colors whitespace-nowrap"
+                >
+                  Konfirmasi ke Finance Pusat (6282335511494)
+                </a>
+                <a
+                  id="btn-wa-finance-cabang"
+                  href="https://wa.me/6285117497240"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center justify-center px-4 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1a2f23] bg-white hover:bg-[#f4faee] border border-[#2d6a4f]/30 rounded-[2px] transition-colors whitespace-nowrap"
+                >
+                  Konfirmasi ke Finance Cabang (6285117497240)
+                </a>
+              </div>
+            </div>
           </div>
 
           <!-- Validation Alert Banner -->
@@ -277,11 +316,8 @@
             <!-- BARIS 01: Identitas & Program -->
             <div id="section-identitas" class="relative p-6 sm:p-10 scroll-mt-20">
               <div class="mb-7">
-                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">
-                  01 · Bagian Pertama
-                </p>
-                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23] mt-1">
-                  Identitas &amp; Program
+                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23]">
+                  01. Identitas &amp; Program
                 </h2>
                 <p class="text-sm text-[#1a2f23]/65 mt-1">
                   Tentukan cabang asal pendaftaran, identitas siswa atau rombongan instansi, serta program yang diambil.
@@ -421,11 +457,8 @@
             <!-- BARIS 02: Detail Pembayaran -->
             <div id="section-pembayaran" class="p-6 sm:p-10 scroll-mt-20">
               <div class="mb-7">
-                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">
-                  02 · Bagian Kedua
-                </p>
-                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23] mt-1">
-                  Detail Pembayaran
+                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23]">
+                  02. Detail Pembayaran
                 </h2>
                 <p class="text-sm text-[#1a2f23]/65 mt-1">
                   Isi kanal pembayaran, nominal transfer dalam Rupiah, serta keterangan peruntukan pembayaran.
@@ -518,14 +551,11 @@
               </div>
             </div>
 
-            <!-- BARIS 03: Bukti & PIC Pembuat Formulir (CS) -->
+            <!-- BARIS 03: Bukti & PIC Pembuat Formulir -->
             <div id="section-bukti" class="p-6 sm:p-10 scroll-mt-20">
               <div class="mb-7">
-                <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f]">
-                  03 · Bagian Ketiga
-                </p>
-                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23] mt-1">
-                  Bukti &amp; PIC Pembuat Formulir (CS)
+                <h2 class="font-display text-2xl sm:text-3xl font-bold text-[#1a2f23]">
+                  03. Bukti &amp; PIC Pembuat Formulir
                 </h2>
                 <p class="text-sm text-[#1a2f23]/65 mt-1">
                   Unggah gambar bukti pembayaran yang terbaca jelas dan isi nama CS/Admin Pembayaran.
@@ -600,9 +630,6 @@
                       placeholder="Contoh: 081234567890"
                       class="w-full h-11 px-0 text-sm font-mono bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
                     />
-                    <p class="mt-1.5 text-xs text-[#718355]">
-                      Opsional sebagai referensi; di portal admin kwitansi tetap bebas dikirim ke kontak WhatsApp mana pun.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -767,9 +794,6 @@
             >
               Masuk Portal Admin
             </button>
-            <p class="text-xs text-[#718355] text-center">
-              PIN demo default: <span class="font-mono font-semibold text-[#1a2f23]">1234</span>
-            </p>
           </form>
         </section>
 
@@ -1329,7 +1353,7 @@
         // =========================================================================
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzsFyB-ibOIKqrnzUzpgiIzCdVmWpBrcpVhuB8LNg1SSA22XBN-BQlCmPXlO4lXSbew/exec";
 
-        const ADMIN_PIN = "1234";
+        const ADMIN_PIN = "0258";
         const SESSION_KEY_ADMIN = "kilc_admin_unlocked_v1";
 
         const PIC_OPTIONS = [
@@ -2235,6 +2259,64 @@
             successBanner.classList.add("hidden");
           });
 
+          const confirmWaMsgInput = document.getElementById("public-confirm-wa-msg");
+          const btnCopyConfirmMsg = document.getElementById("btn-copy-confirm-msg");
+          const btnWaFinancePusat = document.getElementById("btn-wa-finance-pusat");
+          const btnWaFinanceCabang = document.getElementById("btn-wa-finance-cabang");
+          const FINANCE_WA_PUSAT = "6282335511494";
+          const FINANCE_WA_CABANG = "6285117497240";
+
+          function buildFinanceConfirmationMessage(payload) {
+            const rekInfo = payload.digitRekening ? " (Rek ***" + payload.digitRekening + ")" : "";
+            return [
+              "Halo Tim Finance KILC,",
+              "Mohon konfirmasi pengajuan kwitansi pembayaran yang baru saja saya kirim:",
+              "",
+              "• *ID Pengajuan:* " + payload.id,
+              "• *Cabang:* " + payload.cabang,
+              "• *Nama Siswa / Instansi:* " + payload.namaSiswa,
+              "• *Program:* " + payload.program + " (Periode " + formatShortDate(payload.periode) + ")",
+              "• *Metode & Nominal:* " + payload.metodeBayar + rekInfo + " — " + formatRupiahDisplay(payload.jumlahBayar),
+              "• *Tanggal Bayar:* " + formatShortDate(payload.tglBayar),
+              "• *Keterangan:* " + payload.keterangan,
+              payload.csAdminName ? "• *CS / Admin Penginput:* " + payload.csAdminName : "",
+              "",
+              "Mohon bantuannya untuk proses verifikasi dan penerbitan kwitansi. Terima kasih."
+            ]
+              .filter(function (line, idx, arr) {
+                return line !== "" || (idx > 0 && arr[idx - 1] !== "");
+              })
+              .join("\n");
+          }
+
+          function syncFinanceConfirmWaLinks() {
+            const msgText = confirmWaMsgInput ? confirmWaMsgInput.value : "";
+            if (btnWaFinancePusat) {
+              btnWaFinancePusat.href = buildWhatsappUrl(FINANCE_WA_PUSAT, msgText);
+            }
+            if (btnWaFinanceCabang) {
+              btnWaFinanceCabang.href = buildWhatsappUrl(FINANCE_WA_CABANG, msgText);
+            }
+          }
+
+          if (confirmWaMsgInput) {
+            confirmWaMsgInput.addEventListener("input", syncFinanceConfirmWaLinks);
+          }
+
+          if (btnCopyConfirmMsg && confirmWaMsgInput) {
+            btnCopyConfirmMsg.addEventListener("click", async function () {
+              try {
+                await navigator.clipboard.writeText(confirmWaMsgInput.value);
+                btnCopyConfirmMsg.textContent = "Tersalin!";
+                setTimeout(function () {
+                  btnCopyConfirmMsg.textContent = "Salin Pesan";
+                }, 1500);
+              } catch (err) {
+                confirmWaMsgInput.select();
+              }
+            });
+          }
+
           btnNewSubmission.addEventListener("click", function () {
             successBanner.classList.add("hidden");
             document.getElementById("input-cabang").focus();
@@ -2329,6 +2411,12 @@
                 " · CS: " +
                 submitPayload.csAdminName +
                 ".";
+
+              if (confirmWaMsgInput) {
+                confirmWaMsgInput.value = buildFinanceConfirmationMessage(submitPayload);
+                syncFinanceConfirmWaLinks();
+              }
+
               successBanner.classList.remove("hidden");
               successBanner.scrollIntoView({ behavior: "smooth", block: "nearest" });
             } catch (err) {
@@ -3119,6 +3207,9 @@
           const siteAdmin = document.getElementById("site-admin");
 
           if (isAdminModeUrl()) {
+            if (window.location.search !== "?mode=admin" && window.history && window.history.replaceState) {
+              window.history.replaceState(null, "", window.location.pathname + "?mode=admin" + window.location.hash);
+            }
             document.title = "Portal Administrator Kwitansi KILC";
             sitePublic.classList.add("hidden");
             siteAdmin.classList.remove("hidden");
@@ -3127,6 +3218,9 @@
             renderAdminGateOrDashboard();
             fetchRecordsFromAppsScript();
           } else {
+            if (window.location.search && window.history && window.history.replaceState) {
+              window.history.replaceState(null, "", window.location.pathname + window.location.hash);
+            }
             document.title = "Formulir Konfirmasi Pembayaran KILC";
             siteAdmin.classList.add("hidden");
             sitePublic.classList.remove("hidden");

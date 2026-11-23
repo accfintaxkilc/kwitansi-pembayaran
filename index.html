@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aplikasi Pembuatan Kwitansi Pembayaran KILC</title>
+    <link rel="icon" type="image/png" href="/assets/aistudio/Logo_kwitansi_dafff284.png" />
+    <link rel="shortcut icon" type="image/png" href="/assets/aistudio/Logo_kwitansi_dafff284.png" />
+    <link rel="apple-touch-icon" href="/assets/aistudio/Logo_kwitansi_dafff284.png" />
     <meta
       name="description"
       content="Portal formulir pembayaran siswa/rombongan dan administrasi penerbitan kwitansi resmi Kampung Inggris Language Center (KILC)."
@@ -181,7 +184,7 @@
               src="/assets/aistudio/logo_internal_32667169.png"
               alt="Logo LC Language Center"
               class="h-6 sm:h-9 w-auto object-contain shrink-0"
-              onerror="this.style.display='none'"
+              onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='assets/aistudio/logo_internal_32667169.png';}else{this.style.display='none';}"
             />
             <span class="truncate">PORTAL KWITANSI PEMBAYARAN</span>
           </a>
@@ -756,7 +759,7 @@
               src="/assets/aistudio/logo_internal_32667169.png"
               alt="Logo LC Language Center"
               class="h-12 w-auto object-contain mb-4"
-              onerror="this.style.display='none'"
+              onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='assets/aistudio/logo_internal_32667169.png';}else{this.style.display='none';}"
             />
             <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2d6a4f] mb-1.5">
               Akses Terbatas · Finance KILC
@@ -1764,10 +1767,16 @@
             }
             const img = new Image();
             img.crossOrigin = "anonymous";
+            let triedRelative = false;
             img.onload = function () {
               resolve(img);
             };
             img.onerror = function () {
+              if (!triedRelative && src.charAt(0) === "/") {
+                triedRelative = true;
+                img.src = src.slice(1);
+                return;
+              }
               resolve(null);
             };
             img.src = src;

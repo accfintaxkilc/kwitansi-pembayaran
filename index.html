@@ -773,12 +773,19 @@
     <!-- ==================== WEBSITE 2: PORTAL ADMIN (?mode=admin) ==================== -->
     <div id="site-admin" class="hidden min-h-screen flex flex-col">
       <header class="no-print sticky top-0 z-30 bg-[#fdfefc]/85 backdrop-blur-md border-b border-[#1a2f23]/10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-8">
           <a
             href="?mode=admin"
-            class="font-mono text-xs font-bold uppercase tracking-[0.12em] text-[#1a2f23] whitespace-nowrap shrink-0"
+            class="inline-flex items-center gap-1.5 sm:gap-3 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-[0.06em] sm:tracking-[0.12em] text-[#1a2f23] whitespace-nowrap min-w-0 shrink"
           >
-            KILC Admin Portal
+            <img
+              src="/assets/aistudio/logo_internal_32667169.png"
+              data-kilc-logo="1"
+              alt="Logo LC Language Center"
+              class="h-6 sm:h-9 w-auto object-contain shrink-0"
+              onerror="window.__kilcLogoFallback && window.__kilcLogoFallback(this)"
+            />
+            <span class="truncate">KILC Admin Portal</span>
           </a>
 
           <nav aria-label="Navigasi admin" class="hidden sm:flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.12em] text-[#1a2f23]/70">
@@ -1068,6 +1075,15 @@
             alt="Bukti pembayaran"
             class="max-w-full max-h-[60vh] object-contain rounded-[2px] border border-[#1a2f23]/15 bg-white"
           />
+          <div
+            id="proof-modal-fallback-note"
+            class="hidden w-full rounded-[4px] border border-[#1a2f23]/15 bg-[#f4faee] p-4 text-center text-xs text-[#1a2f23]/80"
+          >
+            <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2d6a4f] mb-1">
+              Arsip File Bukti di Google Sheets / Drive
+            </p>
+            <p id="proof-modal-filename-text" class="font-medium text-[#1a2f23] break-all"></p>
+          </div>
           <a
             id="proof-modal-external-link"
             href="#"
@@ -1641,62 +1657,117 @@
           return { mimeType: fallback, base64: raw };
         }
 
+        function normalizeHeaderKey(key) {
+          return String(key || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[\s_-]+/g, "");
+        }
+
+        function pickRecordField(raw, aliases) {
+          if (!raw || typeof raw !== "object") return undefined;
+          for (let i = 0; i < aliases.length; i++) {
+            const alias = aliases[i];
+            if (Object.prototype.hasOwnProperty.call(raw, alias) && raw[alias] !== undefined && raw[alias] !== "") {
+              return raw[alias];
+            }
+          }
+          const normalizedMap = {};
+          Object.keys(raw).forEach(function (k) {
+            const nk = normalizeHeaderKey(k);
+            if (!(nk in normalizedMap) || (normalizedMap[nk] === "" && raw[k] !== "")) {
+              normalizedMap[nk] = raw[k];
+            }
+          });
+          for (let j = 0; j < aliases.length; j++) {
+            const na = normalizeHeaderKey(aliases[j]);
+            if (Object.prototype.hasOwnProperty.call(normalizedMap, na) && normalizedMap[na] !== undefined && normalizedMap[na] !== "") {
+              return normalizedMap[na];
+            }
+          }
+          return undefined;
+        }
+
+        function isLikelyPlainFileName(val) {
+          const s = String(val || "").trim();
+          if (!s || s.startsWith("data:") || /^https?:\/\//i.test(s)) return false;
+          if (/\s/.test(s)) return true;
+          if (/\.(jpe?g|png|webp|gif|pdf)$/i.test(s) && s.length < 260) return true;
+          return false;
+        }
+
         function resolveProofPreviewSrc(rawSrc, mimeType) {
           const val = String(rawSrc || "").trim();
-          if (!val) return { imgSrc: "", externalUrl: "" };
+          if (!val) return { imgSrc: "", externalUrl: "", fileNameOnly: "" };
           if (/^https?:\/\//i.test(val)) {
             const driveMatch = val.match(/drive\.google\.com\/file\/d\/([^/]+)/i) || val.match(/[?&]id=([^&]+)/i);
             const imgSrc = driveMatch
               ? "https://drive.google.com/thumbnail?id=" + encodeURIComponent(driveMatch[1]) + "&sz=w1200"
               : val;
-            return { imgSrc: imgSrc, externalUrl: val };
+            return { imgSrc: imgSrc, externalUrl: val, fileNameOnly: "" };
           }
           if (val.startsWith("data:")) {
-            return { imgSrc: val, externalUrl: "" };
+            return { imgSrc: val, externalUrl: "", fileNameOnly: "" };
           }
-          return { imgSrc: "data:" + (mimeType || "image/jpeg") + ";base64," + val, externalUrl: "" };
+          if (isLikelyPlainFileName(val)) {
+            return { imgSrc: "", externalUrl: "", fileNameOnly: val };
+          }
+          return { imgSrc: "data:" + (mimeType || "image/jpeg") + ";base64," + val, externalUrl: "", fileNameOnly: "" };
         }
 
         function normalizeAppsScriptRecord(raw) {
           const r = raw || {};
-          const isRombonganVal = r.isRombongan;
+          const isRombonganVal = pickRecordField(r, ["isRombongan", "rombongan"]);
+          const rombStr = String(isRombonganVal !== undefined ? isRombonganVal : "").trim().toLowerCase();
           const isRombongan =
             typeof isRombonganVal === "boolean"
               ? isRombonganVal
-              : String(isRombonganVal || "").trim().toLowerCase() === "true" ||
-                String(isRombonganVal || "").trim().toLowerCase() === "ya";
+              : rombStr === "true" || rombStr === "ya" || rombStr === "yes" || rombStr === "1";
 
-          const mimeType = String(r.mimeType || "image/jpeg").trim() || "image/jpeg";
-          const rawFile = String(r.buktiBase64 || r.fileUrl || r.buktiUrl || r.fileData || "").trim();
+          const mimeType = String(pickRecordField(r, ["mimeType", "mime"]) || "image/jpeg").trim() || "image/jpeg";
+          const rawFile = String(
+            pickRecordField(r, ["buktiBase64", "fileUrl", "buktiUrl", "driveUrl", "linkBukti", "fileData", "buktiBayar"]) || ""
+          ).trim();
           const proofResolved = resolveProofPreviewSrc(rawFile, mimeType);
 
+          const rawReceiptNo = String(pickRecordField(r, ["receiptNumber", "noKwitansi", "nomorKwitansi"]) || "").trim();
+          const receiptNumber =
+            rawReceiptNo === "-" || rawReceiptNo.toLowerCase() === "null" ? "" : rawReceiptNo;
+
+          const rawAmount = pickRecordField(r, ["jumlahPembayaran", "jumlahBayar", "nominal"]);
+          const rawStatus = String(pickRecordField(r, ["status"]) || "Menunggu Verifikasi").trim() || "Menunggu Verifikasi";
+
           return {
-            id: String(r.id || ""),
-            cabang: String(r.cabang || ""),
-            namaSiswa: String(r.namaSiswa || ""),
+            id: String(pickRecordField(r, ["id"]) || ""),
+            cabang: String(pickRecordField(r, ["cabang"]) || ""),
+            namaSiswa: String(pickRecordField(r, ["namaSiswa", "nama"]) || ""),
             isRombongan: isRombongan,
-            jenisRombongan: String(r.jenisRombongan || ""),
-            nomorRegistrasi: String(r.nomorRegistrasi || r.noRegistrasi || "-"),
-            programKursus: String(r.programKursus || r.program || ""),
-            periode: String(r.periode || ""),
-            metodePengiriman: String(r.metodePengiriman || r.metodeBayar || ""),
-            digitRekening: String(r.digitRekening || ""),
-            tanggalPembayaran: String(r.tanggalPembayaran || r.tglBayar || ""),
-            jumlahPembayaran: parseRupiah(r.jumlahPembayaran !== undefined ? r.jumlahPembayaran : r.jumlahBayar),
-            keterangan: String(r.keterangan || ""),
+            jenisRombongan: String(pickRecordField(r, ["jenisRombongan"]) || ""),
+            nomorRegistrasi: String(pickRecordField(r, ["nomorRegistrasi", "noRegistrasi"]) || "-"),
+            programKursus: String(pickRecordField(r, ["programKursus", "program"]) || ""),
+            periode: String(pickRecordField(r, ["periode"]) || ""),
+            metodePengiriman: String(pickRecordField(r, ["metodePengiriman", "metodeBayar"]) || ""),
+            digitRekening: String(pickRecordField(r, ["digitRekening"]) || ""),
+            tanggalPembayaran: String(pickRecordField(r, ["tanggalPembayaran", "tglBayar"]) || ""),
+            jumlahPembayaran: parseRupiah(rawAmount !== undefined ? rawAmount : 0),
+            keterangan: String(pickRecordField(r, ["keterangan"]) || ""),
             buktiBase64: proofResolved.imgSrc,
             buktiExternalUrl: proofResolved.externalUrl,
-            buktiNama: String(r.buktiNama || r.fileName || "bukti-pembayaran"),
+            buktiNama: String(
+              pickRecordField(r, ["buktiNama", "fileName"]) || proofResolved.fileNameOnly || "bukti-pembayaran"
+            ),
             mimeType: mimeType,
-            csAdminName: String(r.csAdminName || r.cs || ""),
-            whatsappNumber: normalizeWhatsappNumber(String(r.whatsappNumber || r.whatsapp || "")),
-            pic: String(r.pic || ""),
-            catatan: String(r.catatan || ""),
-            status: String(r.status || "Menunggu Verifikasi").trim() || "Menunggu Verifikasi",
-            receiptNumber: String(r.receiptNumber || r.noKwitansi || ""),
-            parafBase64: String(r.parafBase64 || ""),
-            createdAt: String(r.createdAt || r.timestamp || ""),
-            issuedAt: String(r.issuedAt || "")
+            csAdminName: String(pickRecordField(r, ["csAdminName", "csAdmin", "cs", "namaCs", "adminPembayaran"]) || ""),
+            whatsappNumber: normalizeWhatsappNumber(
+              String(pickRecordField(r, ["whatsappNumber", "whatsapp", "noWa", "noWhatsapp"]) || "")
+            ),
+            pic: String(pickRecordField(r, ["pic"]) || ""),
+            catatan: String(pickRecordField(r, ["catatan", "catatanStaf", "notes", "note"]) || ""),
+            status: rawStatus,
+            receiptNumber: receiptNumber,
+            parafBase64: String(pickRecordField(r, ["parafBase64"]) || ""),
+            createdAt: String(pickRecordField(r, ["createdAt", "timestamp"]) || ""),
+            issuedAt: String(pickRecordField(r, ["issuedAt"]) || "")
           };
         }
 
@@ -1753,8 +1824,8 @@
         }
 
         async function fetchRecordsFromAppsScript(options) {
-          if (isAdminLoading) return adminRecords;
           const opts = options || {};
+          if (isAdminLoading && !opts.force) return adminRecords;
           const refreshBtn = document.getElementById("btn-admin-refresh");
           isAdminLoading = true;
           if (refreshBtn) {
@@ -1766,7 +1837,9 @@
           }
 
           try {
-            const response = await fetch(WEB_APP_URL, {
+            const sep = WEB_APP_URL.indexOf("?") === -1 ? "?" : "&";
+            const fetchUrl = WEB_APP_URL + sep + "t=" + Date.now();
+            const response = await fetch(fetchUrl, {
               method: "GET",
               redirect: "follow"
             });
@@ -1777,12 +1850,13 @@
             if (res && (res.status === "error" || res.success === false)) {
               throw new Error(res.message || res.error || "Respon error dari Google Apps Script.");
             }
-            const list = Array.isArray(res && res.data) ? res.data : (Array.isArray(res) ? res : []);
-            adminRecords = list
+            const rawList = Array.isArray(res && res.data) ? res.data : (Array.isArray(res) ? res : []);
+            adminRecords = rawList
               .map(normalizeAppsScriptRecord)
               .filter(function (item) {
                 return item.status !== "Ditolak";
-              });
+              })
+              .reverse();
             if (opts.notifyOnSuccess) {
               showAdminBanner("Data berhasil diperbarui dari Google Sheets (" + adminRecords.length + " pengajuan aktif).");
             }
@@ -2906,7 +2980,7 @@
               pinError.classList.add("hidden");
               pinInput.value = "";
               renderAdminGateOrDashboard();
-              fetchRecordsFromAppsScript();
+              fetchRecordsFromAppsScript({ force: true });
             } else {
               pinError.classList.remove("hidden");
               pinInput.focus();
@@ -2916,9 +2990,15 @@
 
           if (btnRefresh) {
             btnRefresh.addEventListener("click", function () {
-              fetchRecordsFromAppsScript({ notifyOnSuccess: true });
+              fetchRecordsFromAppsScript({ notifyOnSuccess: true, force: true });
             });
           }
+
+          document.addEventListener("visibilitychange", function () {
+            if (!document.hidden && isAdminModeUrl() && isAdminUnlocked()) {
+              fetchRecordsFromAppsScript();
+            }
+          });
 
           btnLock.addEventListener("click", function () {
             sessionStorage.removeItem(SESSION_KEY_ADMIN);
@@ -2960,11 +3040,26 @@
         function openProofModal(item) {
           const modal = document.getElementById("proof-modal");
           const imgEl = document.getElementById("proof-modal-img");
+          const fallbackNote = document.getElementById("proof-modal-fallback-note");
+          const filenameText = document.getElementById("proof-modal-filename-text");
           const extLink = document.getElementById("proof-modal-external-link");
           document.getElementById("proof-modal-title").textContent = "Bukti Pembayaran · " + item.namaSiswa;
           document.getElementById("proof-modal-subtitle").textContent =
             item.cabang + " · " + formatRupiahDisplay(item.jumlahPembayaran) + " · " + item.metodePengiriman;
-          imgEl.src = item.buktiBase64 || "";
+
+          if (item.buktiBase64) {
+            imgEl.src = item.buktiBase64;
+            imgEl.classList.remove("hidden");
+            if (fallbackNote) fallbackNote.classList.add("hidden");
+          } else {
+            imgEl.src = "";
+            imgEl.classList.add("hidden");
+            if (fallbackNote && filenameText) {
+              filenameText.textContent = item.buktiNama || "File tersimpan di Google Drive";
+              fallbackNote.classList.remove("hidden");
+            }
+          }
+
           if (item.buktiExternalUrl) {
             extLink.href = item.buktiExternalUrl;
             extLink.classList.remove("hidden");

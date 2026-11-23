@@ -422,17 +422,17 @@
                 </div>
 
                 <div class="md:col-span-2 pt-1">
-                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-[4px] bg-[#e9f5db]/75 border border-[#2d6a4f]/15">
-                    <label for="input-is-rombongan" class="flex items-start gap-3 cursor-pointer select-none">
+                  <div id="rombongan-card" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-[4px] bg-[#e9f5db]/75 border border-[#2d6a4f]/15 transition-opacity">
+                    <label id="label-rombongan" for="input-is-rombongan" class="flex items-start gap-3 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         id="input-is-rombongan"
                         name="isRombongan"
-                        class="mt-0.5 h-5 w-5 rounded-[2px] border-[#2d6a4f]/40 text-[#2d6a4f] cursor-pointer accent-[#2d6a4f]"
+                        class="mt-0.5 h-5 w-5 rounded-[2px] border-[#2d6a4f]/40 text-[#2d6a4f] cursor-pointer accent-[#2d6a4f] disabled:cursor-not-allowed disabled:opacity-50"
                       />
                       <span>
                         <span class="block text-sm font-semibold text-[#1a2f23]">Tipe Rombongan</span>
-                        <span class="block text-xs text-[#1a2f23]/70 mt-0.5">
+                        <span id="hint-rombongan" class="block text-xs text-[#1a2f23]/70 mt-0.5">
                           Centang jika pembayaran berasal dari rombongan instansi/sekolah. Nomor registrasi siswa otomatis diisi "-".
                         </span>
                       </span>
@@ -619,7 +619,7 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 items-start">
                 <div>
                   <label for="input-bukti" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-2">
-                    Upload Bukti Pembayaran <span class="text-red-600" aria-hidden="true">*</span>
+                    Upload Bukti Pembayaran <span id="badge-req-bukti" class="text-red-600" aria-hidden="true">*</span>
                   </label>
                   <input
                     type="file"
@@ -629,7 +629,7 @@
                     required
                     class="block w-full text-sm text-[#1a2f23] file:mr-4 file:py-2.5 file:px-4 file:rounded-[2px] file:border file:border-[#1a2f23]/15 file:font-mono file:text-[11px] file:uppercase file:tracking-[0.08em] file:font-semibold file:bg-[#fdfefc] file:text-[#1a2f23] hover:file:bg-[#e9f5db] cursor-pointer border border-[#1a2f23]/15 rounded-[4px] p-1.5 bg-[#fdfefc]"
                   />
-                  <p class="mt-2 text-xs text-[#718355]">
+                  <p id="hint-bukti" class="mt-2 text-xs text-[#718355]">
                     Format gambar (JPG, PNG, WEBP). Disimpan aman sebagai data base64.
                   </p>
 
@@ -657,7 +657,7 @@
                 <div class="space-y-6">
                   <div>
                     <label for="input-cs-admin" class="block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#718355] mb-1.5">
-                      Nama CS / Admin Pembayaran <span class="text-red-600" aria-hidden="true">*</span>
+                      Nama CS / Admin Pembayaran <span id="badge-req-cs" class="text-red-600" aria-hidden="true">*</span>
                     </label>
                     <input
                       type="text"
@@ -667,7 +667,7 @@
                       placeholder="Contoh: CS Nada atau Admin Pembayaran"
                       class="w-full h-11 px-0 text-sm bg-transparent border-0 border-b border-[#1a2f23]/20 rounded-none text-[#1a2f23] placeholder:text-[#1a2f23]/35 focus:border-[#2d6a4f] transition-colors"
                     />
-                    <p class="mt-1.5 text-xs text-[#718355]">
+                    <p id="hint-cs" class="mt-1.5 text-xs text-[#718355]">
                       Diisi manual oleh CS atau Admin Pembayaran yang menginput formulir.
                     </p>
                   </div>
@@ -1073,26 +1073,17 @@
             id="proof-modal-img"
             src=""
             alt="Bukti pembayaran"
-            class="max-w-full max-h-[60vh] object-contain rounded-[2px] border border-[#1a2f23]/15 bg-white"
+            class="max-w-full max-h-[65vh] object-contain rounded-[2px] border border-[#1a2f23]/15 bg-white"
           />
           <div
             id="proof-modal-fallback-note"
             class="hidden w-full rounded-[4px] border border-[#1a2f23]/15 bg-[#f4faee] p-4 text-center text-xs text-[#1a2f23]/80"
           >
             <p class="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2d6a4f] mb-1">
-              Arsip File Bukti di Google Sheets / Drive
+              Pratinjau Gambar Tidak Tersedia
             </p>
             <p id="proof-modal-filename-text" class="font-medium text-[#1a2f23] break-all"></p>
           </div>
-          <a
-            id="proof-modal-external-link"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hidden px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2d6a4f] bg-[#e9f5db] hover:bg-[#dceecc] border border-[#2d6a4f]/25 rounded-[2px] transition-colors"
-          >
-            Buka File Bukti di Tab Baru
-          </a>
         </div>
       </div>
     </div>
@@ -1430,6 +1421,8 @@
 
         const ADMIN_PIN = "0258";
         const SESSION_KEY_ADMIN = "kilc_admin_unlocked_v1";
+        const STORAGE_KEY_ADMIN_META = "kilc_admin_meta_v1";
+        const STORAGE_KEY_PROOF_CACHE = "kilc_proof_cache_v1";
 
         const PIC_OPTIONS = [
           "M. Faisal Aji S.",
@@ -1565,7 +1558,30 @@
           return String(branch || "").trim().toLowerCase().startsWith("pare");
         }
 
-        function generateReceiptNumber(branch, isRombongan, seqNumber, dateObj) {
+        function isRombonganAllowedForBranch(branch) {
+          const b = String(branch || "").trim().toLowerCase();
+          return b !== "pare - offline" && b !== "pare - online";
+        }
+
+        function requiresProofAndCsForBranch(branch) {
+          return String(branch || "").trim().toLowerCase() !== "pare - offline";
+        }
+
+        function getDefaultPicForBranch(branch) {
+          return isPareBranch(branch) ? "Dian Nailur R." : "Indra Suwanto";
+        }
+
+        function getRombonganTypeCode(jenisRombongan) {
+          const normalized = String(jenisRombongan || "").trim().toLowerCase();
+          if (normalized === "english camp") return "Camp";
+          if (normalized === "english non camp") return "Non Camp";
+          if (normalized === "one day visit") return "ODV";
+          if (normalized === "goes to") return "Goes to";
+          if (normalized === "online") return "ONL";
+          return "";
+        }
+
+        function generateReceiptNumber(branch, isRombongan, jenisRombongan, seqNumber, dateObj) {
           const d = dateObj instanceof Date ? dateObj : new Date();
           const code = getBranchCode(branch);
           const roman = toRomanMonth(d.getMonth());
@@ -1573,6 +1589,12 @@
           const parts = ["KILC", code];
           if (Boolean(isRombongan) && !isPareBranch(branch)) {
             parts.push("RO");
+          }
+          if (Boolean(isRombongan)) {
+            const typeCode = getRombonganTypeCode(jenisRombongan);
+            if (typeCode) {
+              parts.push(typeCode);
+            }
           }
           parts.push(roman, seq);
           return parts.join("/");
@@ -1696,27 +1718,86 @@
           return false;
         }
 
+        function loadAdminMetaMap() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY_ADMIN_META);
+            return raw ? JSON.parse(raw) : {};
+          } catch (e) {
+            return {};
+          }
+        }
+
+        function saveAdminMetaField(id, patch) {
+          if (!id) return;
+          try {
+            const map = loadAdminMetaMap();
+            map[id] = Object.assign({}, map[id] || {}, patch);
+            localStorage.setItem(STORAGE_KEY_ADMIN_META, JSON.stringify(map));
+          } catch (e) {}
+        }
+
+        function loadProofCacheMap() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY_PROOF_CACHE);
+            return raw ? JSON.parse(raw) : {};
+          } catch (e) {
+            return {};
+          }
+        }
+
+        function saveProofCache(id, dataUrl) {
+          if (!id || !dataUrl) return;
+          try {
+            const map = loadProofCacheMap();
+            map[id] = dataUrl;
+            const keys = Object.keys(map);
+            if (keys.length > 8) {
+              keys.slice(0, keys.length - 8).forEach(function (k) {
+                delete map[k];
+              });
+            }
+            localStorage.setItem(STORAGE_KEY_PROOF_CACHE, JSON.stringify(map));
+          } catch (e) {}
+        }
+
         function resolveProofPreviewSrc(rawSrc, mimeType) {
           const val = String(rawSrc || "").trim();
-          if (!val) return { imgSrc: "", externalUrl: "", fileNameOnly: "" };
+          if (!val || val === "-") return { imgSrc: "", driveId: "", fileNameOnly: "" };
           if (/^https?:\/\//i.test(val)) {
-            const driveMatch = val.match(/drive\.google\.com\/file\/d\/([^/]+)/i) || val.match(/[?&]id=([^&]+)/i);
-            const imgSrc = driveMatch
-              ? "https://drive.google.com/thumbnail?id=" + encodeURIComponent(driveMatch[1]) + "&sz=w1200"
+            const driveMatch =
+              val.match(/drive\.google\.com\/file\/d\/([^/]+)/i) ||
+              val.match(/[?&]id=([^&]+)/i);
+            const driveId = driveMatch ? driveMatch[1] : "";
+            const imgSrc = driveId
+              ? "https://drive.google.com/thumbnail?id=" + encodeURIComponent(driveId) + "&sz=w1200"
               : val;
-            return { imgSrc: imgSrc, externalUrl: val, fileNameOnly: "" };
+            return { imgSrc: imgSrc, driveId: driveId, fileNameOnly: "" };
           }
           if (val.startsWith("data:")) {
-            return { imgSrc: val, externalUrl: "", fileNameOnly: "" };
+            return { imgSrc: val, driveId: "", fileNameOnly: "" };
           }
           if (isLikelyPlainFileName(val)) {
-            return { imgSrc: "", externalUrl: "", fileNameOnly: val };
+            return { imgSrc: "", driveId: "", fileNameOnly: val };
           }
-          return { imgSrc: "data:" + (mimeType || "image/jpeg") + ";base64," + val, externalUrl: "", fileNameOnly: "" };
+          return { imgSrc: "data:" + (mimeType || "image/jpeg") + ";base64," + val, driveId: "", fileNameOnly: "" };
+        }
+
+        function isValidSubmissionRecord(item) {
+          return Boolean(
+            item &&
+              String(item.namaSiswa || "").trim() &&
+              String(item.cabang || "").trim() &&
+              item.status !== "Ditolak"
+          );
         }
 
         function normalizeAppsScriptRecord(raw) {
           const r = raw || {};
+          const metaMap = loadAdminMetaMap();
+          const proofCache = loadProofCacheMap();
+          const id = String(pickRecordField(r, ["id"]) || "");
+          const cachedMeta = (id && metaMap[id]) ? metaMap[id] : {};
+
           const isRombonganVal = pickRecordField(r, ["isRombongan", "rombongan"]);
           const rombStr = String(isRombonganVal !== undefined ? isRombonganVal : "").trim().toLowerCase();
           const isRombongan =
@@ -1729,17 +1810,26 @@
             pickRecordField(r, ["buktiBase64", "fileUrl", "buktiUrl", "driveUrl", "linkBukti", "fileData", "buktiBayar"]) || ""
           ).trim();
           const proofResolved = resolveProofPreviewSrc(rawFile, mimeType);
+          const cachedProof = id && proofCache[id] ? proofCache[id] : "";
 
           const rawReceiptNo = String(pickRecordField(r, ["receiptNumber", "noKwitansi", "nomorKwitansi"]) || "").trim();
           const receiptNumber =
             rawReceiptNo === "-" || rawReceiptNo.toLowerCase() === "null" ? "" : rawReceiptNo;
 
+          const cabang = String(pickRecordField(r, ["cabang"]) || "");
+          const rawPic = String(pickRecordField(r, ["pic"]) || "").trim();
+          const pic = cachedMeta.pic || rawPic || (cabang ? getDefaultPicForBranch(cabang) : "");
+          const catatan =
+            cachedMeta.catatan !== undefined
+              ? String(cachedMeta.catatan)
+              : String(pickRecordField(r, ["catatan", "catatanStaf", "notes", "note"]) || "");
+
           const rawAmount = pickRecordField(r, ["jumlahPembayaran", "jumlahBayar", "nominal"]);
           const rawStatus = String(pickRecordField(r, ["status"]) || "Menunggu Verifikasi").trim() || "Menunggu Verifikasi";
 
           return {
-            id: String(pickRecordField(r, ["id"]) || ""),
-            cabang: String(pickRecordField(r, ["cabang"]) || ""),
+            id: id,
+            cabang: cabang,
             namaSiswa: String(pickRecordField(r, ["namaSiswa", "nama"]) || ""),
             isRombongan: isRombongan,
             jenisRombongan: String(pickRecordField(r, ["jenisRombongan"]) || ""),
@@ -1751,18 +1841,18 @@
             tanggalPembayaran: String(pickRecordField(r, ["tanggalPembayaran", "tglBayar"]) || ""),
             jumlahPembayaran: parseRupiah(rawAmount !== undefined ? rawAmount : 0),
             keterangan: String(pickRecordField(r, ["keterangan"]) || ""),
-            buktiBase64: proofResolved.imgSrc,
-            buktiExternalUrl: proofResolved.externalUrl,
+            buktiBase64: proofResolved.imgSrc || cachedProof,
+            buktiDriveId: proofResolved.driveId,
             buktiNama: String(
-              pickRecordField(r, ["buktiNama", "fileName"]) || proofResolved.fileNameOnly || "bukti-pembayaran"
+              pickRecordField(r, ["buktiNama", "fileName"]) || proofResolved.fileNameOnly || ""
             ),
             mimeType: mimeType,
             csAdminName: String(pickRecordField(r, ["csAdminName", "csAdmin", "cs", "namaCs", "adminPembayaran"]) || ""),
             whatsappNumber: normalizeWhatsappNumber(
               String(pickRecordField(r, ["whatsappNumber", "whatsapp", "noWa", "noWhatsapp"]) || "")
             ),
-            pic: String(pickRecordField(r, ["pic"]) || ""),
-            catatan: String(pickRecordField(r, ["catatan", "catatanStaf", "notes", "note"]) || ""),
+            pic: pic,
+            catatan: catatan,
             status: rawStatus,
             receiptNumber: receiptNumber,
             parafBase64: String(pickRecordField(r, ["parafBase64"]) || ""),
@@ -1853,9 +1943,7 @@
             const rawList = Array.isArray(res && res.data) ? res.data : (Array.isArray(res) ? res : []);
             adminRecords = rawList
               .map(normalizeAppsScriptRecord)
-              .filter(function (item) {
-                return item.status !== "Ditolak";
-              })
+              .filter(isValidSubmissionRecord)
               .reverse();
             if (opts.notifyOnSuccess) {
               showAdminBanner("Data berhasil diperbarui dari Google Sheets (" + adminRecords.length + " pengajuan aktif).");
@@ -2197,6 +2285,10 @@
         // ==================== WEBSITE 1: PUBLIC FORM LOGIC ====================
         function initPublicForm() {
           const form = document.getElementById("payment-form");
+          const selCabang = document.getElementById("input-cabang");
+          const rombonganCard = document.getElementById("rombongan-card");
+          const labelRombongan = document.getElementById("label-rombongan");
+          const hintRombongan = document.getElementById("hint-rombongan");
           const chkRombongan = document.getElementById("input-is-rombongan");
           const wrapJenisRombongan = document.getElementById("wrapper-jenis-rombongan");
           const selJenisRombongan = document.getElementById("input-jenis-rombongan");
@@ -2215,6 +2307,11 @@
           const previewTerbilang = document.getElementById("preview-terbilang");
 
           const inputBukti = document.getElementById("input-bukti");
+          const badgeReqBukti = document.getElementById("badge-req-bukti");
+          const hintBukti = document.getElementById("hint-bukti");
+          const inputCsAdmin = document.getElementById("input-cs-admin");
+          const badgeReqCs = document.getElementById("badge-req-cs");
+          const hintCs = document.getElementById("hint-cs");
           const previewBox = document.getElementById("bukti-preview-box");
           const previewImg = document.getElementById("bukti-preview-img");
           const previewName = document.getElementById("bukti-preview-name");
@@ -2264,8 +2361,67 @@
             }
           }
 
+          function handleCabangChange() {
+            const cabang = selCabang.value.trim();
+            const rombonganAllowed = isRombonganAllowedForBranch(cabang);
+            const needProofAndCs = requiresProofAndCsForBranch(cabang);
+
+            if (!rombonganAllowed) {
+              chkRombongan.checked = false;
+              chkRombongan.disabled = true;
+              if (rombonganCard) rombonganCard.classList.add("opacity-60");
+              if (labelRombongan) {
+                labelRombongan.classList.remove("cursor-pointer");
+                labelRombongan.classList.add("cursor-not-allowed");
+              }
+              if (hintRombongan) {
+                hintRombongan.textContent =
+                  "Tipe Rombongan dinonaktifkan untuk cabang Pare - Offline dan Pare - Online.";
+              }
+              handleRombonganToggle();
+            } else {
+              chkRombongan.disabled = false;
+              if (rombonganCard) rombonganCard.classList.remove("opacity-60");
+              if (labelRombongan) {
+                labelRombongan.classList.add("cursor-pointer");
+                labelRombongan.classList.remove("cursor-not-allowed");
+              }
+              if (hintRombongan) {
+                hintRombongan.textContent =
+                  'Centang jika pembayaran berasal dari rombongan instansi/sekolah. Nomor registrasi siswa otomatis diisi "-".';
+              }
+            }
+
+            if (!needProofAndCs) {
+              inputBukti.required = false;
+              if (badgeReqBukti) badgeReqBukti.classList.add("hidden");
+              if (hintBukti) {
+                hintBukti.textContent =
+                  "Opsional untuk cabang Pare - Offline (boleh dikosongkan). Format gambar JPG, PNG, WEBP.";
+              }
+              inputCsAdmin.required = false;
+              if (badgeReqCs) badgeReqCs.classList.add("hidden");
+              if (hintCs) {
+                hintCs.textContent = "Opsional untuk cabang Pare - Offline (boleh dikosongkan).";
+              }
+            } else {
+              inputBukti.required = true;
+              if (badgeReqBukti) badgeReqBukti.classList.remove("hidden");
+              if (hintBukti) {
+                hintBukti.textContent = "Format gambar (JPG, PNG, WEBP). Disimpan aman sebagai data base64.";
+              }
+              inputCsAdmin.required = true;
+              if (badgeReqCs) badgeReqCs.classList.remove("hidden");
+              if (hintCs) {
+                hintCs.textContent = "Diisi manual oleh CS atau Admin Pembayaran yang menginput formulir.";
+              }
+            }
+          }
+
           chkRombongan.addEventListener("change", handleRombonganToggle);
+          selCabang.addEventListener("change", handleCabangChange);
           handleRombonganToggle();
+          handleCabangChange();
 
           function handleMetodeChange() {
             const method = selMetode.value;
@@ -2395,6 +2551,7 @@
             errorBanner.classList.add("hidden");
             setDefaultDates();
             handleRombonganToggle();
+            handleCabangChange();
             handleMetodeChange();
           }
 
@@ -2470,10 +2627,11 @@
             e.preventDefault();
             errorBanner.classList.add("hidden");
 
-            const cabang = document.getElementById("input-cabang").value.trim();
+            const cabang = selCabang.value.trim();
             const namaSiswa = document.getElementById("input-nama").value.trim();
-            const isRombongan = chkRombongan.checked;
-            const jenisRombongan = selJenisRombongan.value.trim();
+            const rombonganAllowed = isRombonganAllowedForBranch(cabang);
+            const isRombongan = rombonganAllowed && chkRombongan.checked;
+            const jenisRombongan = isRombongan ? selJenisRombongan.value.trim() : "";
             const nomorRegistrasi = isRombongan ? "-" : inputNoReg.value.trim();
             const programKursus = document.getElementById("input-program").value.trim();
             const periode = inputPeriode.value.trim();
@@ -2485,12 +2643,16 @@
             const tanggalPembayaran = inputTglBayar.value.trim();
             const jumlahPembayaran = parseRupiah(inputJumlah.value);
             const keterangan = document.getElementById("input-keterangan").value.trim();
-            const csAdminName = document.getElementById("input-cs-admin").value.trim();
+            const csAdminName = inputCsAdmin.value.trim();
             const whatsappRaw = document.getElementById("input-whatsapp").value.trim();
             const whatsappNumber = normalizeWhatsappNumber(whatsappRaw);
+            const needProofAndCs = requiresProofAndCsForBranch(cabang);
 
             if (!cabang) return showFormError("Silakan pilih Cabang terlebih dahulu.");
             if (!namaSiswa) return showFormError("Nama Siswa / Instansi wajib diisi.");
+            if (!rombonganAllowed && chkRombongan.checked) {
+              return showFormError("Tipe Rombongan tidak diizinkan untuk cabang Pare - Offline dan Pare - Online.");
+            }
             if (isRombongan && !jenisRombongan) {
               return showFormError("Jenis Rombongan wajib dipilih karena Tipe Rombongan dicentang.");
             }
@@ -2506,12 +2668,13 @@
             if (!tanggalPembayaran) return showFormError("Tanggal Pembayaran wajib diisi.");
             if (jumlahPembayaran <= 0) return showFormError("Jumlah Pembayaran wajib diisi lebih dari Rp 0.");
             if (!keterangan) return showFormError("Keterangan Pembayaran wajib diisi.");
-            if (!uploadedProofBase64) return showFormError("Bukti Pembayaran wajib diunggah.");
-            if (!csAdminName) return showFormError("Nama CS / Admin Pembayaran wajib diisi.");
+            if (needProofAndCs && !uploadedProofBase64) return showFormError("Bukti Pembayaran wajib diunggah.");
+            if (needProofAndCs && !csAdminName) return showFormError("Nama CS / Admin Pembayaran wajib diisi.");
 
             const submitBtn = document.getElementById("btn-submit-form");
             const recordId = "KLC-" + Date.now().toString(36).toUpperCase();
-            const fileMeta = splitDataUrl(uploadedProofBase64, "image/jpeg");
+            const hasProof = Boolean(uploadedProofBase64);
+            const fileMeta = hasProof ? splitDataUrl(uploadedProofBase64, "image/jpeg") : { mimeType: "", base64: "" };
 
             const submitPayload = {
               id: recordId,
@@ -2528,9 +2691,9 @@
               jumlahBayar: jumlahPembayaran,
               keterangan: keterangan,
               fileData: fileMeta.base64,
-              fileName: uploadedProofName || "bukti-pembayaran.jpg",
+              fileName: hasProof ? (uploadedProofName || "bukti-pembayaran.jpg") : "",
               mimeType: fileMeta.mimeType,
-              pic: "",
+              pic: getDefaultPicForBranch(cabang),
               csAdminName: csAdminName,
               whatsappNumber: whatsappNumber,
               status: "Menunggu Verifikasi",
@@ -2543,6 +2706,9 @@
 
             try {
               await postToAppsScript(submitPayload);
+              if (hasProof) {
+                saveProofCache(recordId, uploadedProofBase64);
+              }
 
               resetAllFormFields();
 
@@ -2552,8 +2718,7 @@
                 submitPayload.cabang +
                 ") · " +
                 formatRupiahDisplay(submitPayload.jumlahBayar) +
-                " · CS: " +
-                submitPayload.csAdminName +
+                (submitPayload.csAdminName ? " · CS: " + submitPayload.csAdminName : "") +
                 ".";
 
               if (confirmWaMsgInput) {
@@ -2860,38 +3025,18 @@
           adminRecords[idx].catatan = catatanVal;
         }
 
-        async function updateSubmissionCatatanSync(id, catatanVal) {
+        function updateSubmissionCatatanSync(id, catatanVal) {
           updateSubmissionCatatanLocal(id, catatanVal);
-          const item = adminRecords.find(function (r) {
-            return r.id === id;
-          });
-          if (!item) return;
-          try {
-            await postToAppsScript({
-              action: "updateCatatan",
-              id: item.id,
-              catatan: catatanVal
-            });
-          } catch (err) {
-            console.warn("Gagal menyimpan catatan ke Apps Script:", err);
-          }
+          saveAdminMetaField(id, { catatan: catatanVal });
         }
 
-        async function updateSubmissionPic(id, picName) {
+        function updateSubmissionPic(id, picName) {
           const idx = adminRecords.findIndex(function (r) {
             return r.id === id;
           });
           if (idx === -1) return;
           adminRecords[idx].pic = picName;
-          try {
-            await postToAppsScript({
-              action: "updatePic",
-              id: adminRecords[idx].id,
-              pic: picName
-            });
-          } catch (err) {
-            console.warn("Gagal menyimpan PIC ke Apps Script:", err);
-          }
+          saveAdminMetaField(id, { pic: picName });
         }
 
         async function updateSubmissionStatus(id, newStatus) {
@@ -2911,6 +3056,7 @@
             nextReceiptNo = generateReceiptNumber(
               target.cabang,
               target.isRombongan,
+              target.jenisRombongan,
               seq,
               new Date()
             );
@@ -2953,7 +3099,7 @@
           if (newStatus === "Kwitansi Terbit") {
             target.receiptNumber = nextReceiptNo;
             if (!target.pic) {
-              target.pic = PIC_OPTIONS[0];
+              target.pic = getDefaultPicForBranch(target.cabang);
             }
             target.issuedAt = new Date().toISOString();
           }
@@ -3042,12 +3188,33 @@
           const imgEl = document.getElementById("proof-modal-img");
           const fallbackNote = document.getElementById("proof-modal-fallback-note");
           const filenameText = document.getElementById("proof-modal-filename-text");
-          const extLink = document.getElementById("proof-modal-external-link");
           document.getElementById("proof-modal-title").textContent = "Bukti Pembayaran · " + item.namaSiswa;
           document.getElementById("proof-modal-subtitle").textContent =
             item.cabang + " · " + formatRupiahDisplay(item.jumlahPembayaran) + " · " + item.metodePengiriman;
 
+          imgEl.onerror = null;
+          let driveFallbackStep = 0;
+
           if (item.buktiBase64) {
+            imgEl.onerror = function () {
+              if (item.buktiDriveId) {
+                if (driveFallbackStep === 0) {
+                  driveFallbackStep = 1;
+                  imgEl.src = "https://lh3.googleusercontent.com/d/" + encodeURIComponent(item.buktiDriveId) + "=w1200";
+                  return;
+                }
+                if (driveFallbackStep === 1) {
+                  driveFallbackStep = 2;
+                  imgEl.src = "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(item.buktiDriveId);
+                  return;
+                }
+              }
+              imgEl.classList.add("hidden");
+              if (fallbackNote && filenameText) {
+                filenameText.textContent = item.buktiNama || "Gambar bukti belum dapat dimuat.";
+                fallbackNote.classList.remove("hidden");
+              }
+            };
             imgEl.src = item.buktiBase64;
             imgEl.classList.remove("hidden");
             if (fallbackNote) fallbackNote.classList.add("hidden");
@@ -3055,17 +3222,11 @@
             imgEl.src = "";
             imgEl.classList.add("hidden");
             if (fallbackNote && filenameText) {
-              filenameText.textContent = item.buktiNama || "File tersimpan di Google Drive";
+              filenameText.textContent = item.buktiNama
+                ? "File arsip: " + item.buktiNama
+                : "Tidak ada gambar bukti pembayaran pada pengajuan ini.";
               fallbackNote.classList.remove("hidden");
             }
-          }
-
-          if (item.buktiExternalUrl) {
-            extLink.href = item.buktiExternalUrl;
-            extLink.classList.remove("hidden");
-          } else {
-            extLink.href = "#";
-            extLink.classList.add("hidden");
           }
           modal.classList.remove("hidden");
         }
@@ -3136,7 +3297,7 @@
             return r.id === item.id;
           });
 
-          const effectivePic = selectedPic || PIC_OPTIONS[0];
+          const effectivePic = selectedPic || getDefaultPicForBranch(item.cabang);
           item.pic = effectivePic;
 
           const sigMap = getSignatureMap();
@@ -3157,7 +3318,8 @@
           activeReceiptId = item.id;
 
           const selectPic = document.getElementById("rcp-select-pic");
-          const chosenPic = item.pic && PIC_OPTIONS.includes(item.pic) ? item.pic : PIC_OPTIONS[0];
+          const defaultPic = getDefaultPicForBranch(item.cabang);
+          const chosenPic = item.pic && PIC_OPTIONS.includes(item.pic) ? item.pic : defaultPic;
           selectPic.value = chosenPic;
 
           document.getElementById("rcp-number").textContent = item.receiptNumber || "-";

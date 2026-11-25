@@ -1475,6 +1475,24 @@
         const SESSION_KEY_ADMIN = "kilc_admin_unlocked_v1";
         const STORAGE_KEY_ADMIN_META = "kilc_admin_meta_v1";
         const STORAGE_KEY_PROOF_CACHE = "kilc_proof_cache_v1";
+        const STORAGE_KEY_SUBMITTED_IDS = "kilc_submitted_ids_v1";
+
+        const BRANCH_OPTIONS = [
+          "Pare - Offline",
+          "Pare - Online",
+          "Pare - Rombongan",
+          "Bogor",
+          "Yogya - Mantrijeron",
+          "Yogya - Gondokusuman",
+          "Lampung",
+          "Medan",
+          "Makassar - Panakukang",
+          "Makassar - Tamalanrea",
+          "Bekasi",
+          "Semarang",
+          "Surabaya",
+          "Solo"
+        ];
 
         const PIC_OPTIONS = [
           "M. Faisal Aji S.",
@@ -1635,10 +1653,55 @@
           return "";
         }
 
+        function formatYymmdd(dateObj) {
+          const d = dateObj instanceof Date ? dateObj : new Date();
+          const yy = String(d.getFullYear()).slice(-2);
+          const mm = String(d.getMonth() + 1).padStart(2, "0");
+          const dd = String(d.getDate()).padStart(2, "0");
+          return yy + mm + dd;
+        }
+
+        function getBranchOrderCode(branch) {
+          const normalized = getBranchCode(branch);
+          const idx = BRANCH_OPTIONS.findIndex(function (b) {
+            return getBranchCode(b) === normalized;
+          });
+          if (idx !== -1) {
+            return String(idx + 1).padStart(2, "0");
+          }
+          return "00";
+        }
+
+        function computeNextSubmissionSequence(existingIds, yymmdd, branchOrderCode) {
+          const prefix = ("KWI-" + yymmdd + branchOrderCode).toUpperCase();
+          let maxSeq = 0;
+          (existingIds || []).forEach(function (rawId) {
+            const id = String(rawId || "").trim().toUpperCase();
+            if (id.indexOf(prefix) === 0) {
+              const tail = id.slice(prefix.length);
+              if (/^\d+$/.test(tail)) {
+                const n = parseInt(tail, 10);
+                if (Number.isFinite(n) && n > maxSeq) maxSeq = n;
+              }
+            }
+          });
+          return maxSeq + 1;
+        }
+
+        function generateSubmissionId(branch, dateObj, existingIds) {
+          const d = dateObj instanceof Date ? dateObj : new Date();
+          const yymmdd = formatYymmdd(d);
+          const branchOrderCode = getBranchOrderCode(branch);
+          const seqNum = computeNextSubmissionSequence(existingIds, yymmdd, branchOrderCode);
+          const seq = String(Math.max(1, seqNum)).padStart(3, "0");
+          return "KWI-" + yymmdd + branchOrderCode + seq;
+        }
+
         function generateReceiptNumber(branch, isRombongan, jenisRombongan, seqNumber, dateObj) {
           const d = dateObj instanceof Date ? dateObj : new Date();
           const code = getBranchCode(branch);
           const roman = toRomanMonth(d.getMonth());
+          const yymmdd = formatYymmdd(d);
           const seq = String(seqNumber).padStart(3, "0");
           const parts = ["KILC", code];
           if (Boolean(isRombongan) && !isPareBranch(branch)) {
@@ -1650,7 +1713,7 @@
               parts.push(typeCode);
             }
           }
-          parts.push(roman, seq);
+          parts.push(roman, yymmdd + "-" + seq);
           return parts.join("/");
         }
 
@@ -1944,13 +2007,67 @@
           let maxSeq = 0;
           (records || []).forEach(function (item) {
             const code = String(item.receiptNumber || item.noKwitansi || "").trim();
-            const match = code.match(/\/(\d+)$/);
+            const match = code.match(/(?:\/|-)(\d+)$/);
             if (match) {
               const n = parseInt(match[1], 10);
               if (Number.isFinite(n) && n > maxSeq) maxSeq = n;
             }
           });
           return maxSeq + 1;
+        }
+
+        function loadSubmittedIdsCache() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY_SUBMITTED_IDS);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+          } catch (e) {
+            return [];
+          }
+        }
+
+        function saveSubmittedIdCache(id) {
+          if (!id) return;
+          try {
+            const list = loadSubmittedIdsCache();
+            if (!list.includes(id)) {
+              list.push(id);
+              localStorage.setItem(STORAGE_KEY_SUBMITTED_IDS, JSON.stringify(list.slice(-100)));
+            }
+          } catch (e) {}
+        }
+
+        async function fetchExistingSubmissionIds() {
+          const cached = loadSubmittedIdsCache();
+          let controller = null;
+          let timerId = null;
+          try {
+            if (typeof AbortController !== "undefined") {
+              controller = new AbortController();
+              timerId = setTimeout(function () {
+                controller.abort();
+              }, 4500);
+            }
+            const sep = WEB_APP_URL.indexOf("?") === -1 ? "?" : "&";
+            const fetchUrl = WEB_APP_URL + sep + "t=" + Date.now();
+            const response = await fetch(
+              fetchUrl,
+              controller ? { method: "GET", redirect: "follow", signal: controller.signal } : { method: "GET", redirect: "follow" }
+            );
+            if (!response.ok) return cached;
+            const res = await response.json();
+            const rawList = Array.isArray(res && res.data) ? res.data : (Array.isArray(res) ? res : []);
+            const remoteIds = rawList
+              .map(function (r) {
+                return String(pickRecordField(r, ["id"]) || "").trim();
+              })
+              .filter(Boolean);
+            return Array.from(new Set(cached.concat(remoteIds)));
+          } catch (e) {
+            return cached;
+          } finally {
+            if (timerId) clearTimeout(timerId);
+          }
         }
 
         function getSignatureMap() {
@@ -2747,7 +2864,12 @@
             if (needProofAndCs && !csAdminName) return showFormError("Nama CS / Admin Pembayaran wajib diisi.");
 
             const submitBtn = document.getElementById("btn-submit-form");
-            const recordId = "KLC-" + Date.now().toString(36).toUpperCase();
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Mengirim Data...";
+
+            const existingIds = await fetchExistingSubmissionIds();
+            const recordId = generateSubmissionId(cabang, new Date(), existingIds);
             const hasProof = Boolean(uploadedProofBase64);
             const fileMeta = hasProof ? splitDataUrl(uploadedProofBase64, "image/jpeg") : { mimeType: "", base64: "" };
 
@@ -2775,12 +2897,9 @@
               createdAt: new Date().toISOString()
             };
 
-            const originalBtnText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Mengirim Data...";
-
             try {
               await postToAppsScript(submitPayload);
+              saveSubmittedIdCache(recordId);
               if (hasProof) {
                 saveProofCache(recordId, uploadedProofBase64);
               }

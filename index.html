@@ -163,8 +163,8 @@
       }
 
       @page {
-        size: 210mm 148mm;
-        margin: 7mm;
+        size: A4 portrait;
+        margin: 10mm 8mm 10mm 8mm;
       }
 
       @media print {
@@ -174,15 +174,18 @@
           background-image: none !important;
           margin: 0 !important;
           padding: 0 !important;
-          width: 210mm !important;
-          height: 148mm !important;
+          width: 100% !important;
+          height: auto !important;
+          min-height: 0 !important;
+          display: block !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
         .no-print,
         #site-public,
-        #site-admin {
+        #site-admin,
+        #proof-modal {
           display: none !important;
         }
 
@@ -191,14 +194,17 @@
           inset: auto !important;
           background: transparent !important;
           padding: 0 !important;
+          margin: 0 !important;
+          width: 100% !important;
+          height: auto !important;
           overflow: visible !important;
           display: block !important;
         }
 
         #receipt-modal-dialog {
-          max-width: 100% !important;
-          width: 100% !important;
-          margin: 0 !important;
+          max-width: 194mm !important;
+          width: 194mm !important;
+          margin: 0 auto !important;
           padding: 0 !important;
           box-shadow: none !important;
           border: none !important;
@@ -207,12 +213,14 @@
 
         #receipt-sheet {
           border: 1.5px solid #0f172a !important;
+          border-radius: 0 !important;
           box-shadow: none !important;
           margin: 0 auto !important;
-          padding: 5mm 6mm !important;
-          width: 100% !important;
-          max-width: 100% !important;
-          max-height: 134mm !important;
+          padding: 4.5mm 6mm !important;
+          width: 194mm !important;
+          max-width: 194mm !important;
+          height: auto !important;
+          max-height: 132mm !important;
           overflow: hidden !important;
           page-break-inside: avoid;
           break-inside: avoid;
@@ -1828,7 +1836,13 @@
           return { imgSrc: "data:" + (mimeType || "image/jpeg") + ";base64," + val, driveId: "", fileNameOnly: "" };
         }
 
+        const REMOVED_SUBMISSION_IDS = ["KLC-MWSQJPS7", "KLC-MWSXSX8R", "KLC-MWSY0I1H"];
+
         function isValidSubmissionRecord(item) {
+          const normalizedId = String((item && item.id) || "").trim().toUpperCase();
+          if (normalizedId && REMOVED_SUBMISSION_IDS.includes(normalizedId)) {
+            return false;
+          }
           return Boolean(
             item &&
               String(item.namaSiswa || "").trim() &&
